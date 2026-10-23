@@ -7,14 +7,21 @@ from PIL import Image, ImageDraw, ImageFont
 
 OUT = Path(__file__).resolve().parent.parent / "channel" / "images"
 OUT.mkdir(parents=True, exist_ok=True)
-PINK = (251, 114, 153)
 BG = (15, 15, 20)
+# accent colours, keyed like themes() in channel/components/common/utils.brs; the first is the default
+THEMES = {
+    "yellow": (255, 201, 60),
+    "pink": (251, 114, 153),
+    "blue": (61, 139, 253),
+    "green": (52, 211, 153),
+    "purple": (155, 123, 255),
+}
 CJK = "/System/Library/Fonts/Hiragino Sans GB.ttc"
 
 
-# palettes for the mascot: the app's pink one, and a grey one for image placeholders
-DOG = {"head": PINK, "ear": (217, 87, 126), "patch": (232, 98, 138), "muzzle": (255, 214, 226),
-       "ink": (38, 22, 30), "tongue": (255, 79, 123), "shine": (255, 255, 255)}
+# palettes for the mascot: a white puppy (it sits beside any accent), and a grey one for placeholders
+DOG = {"head": (242, 242, 246), "ear": (205, 205, 214), "patch": (222, 222, 230), "muzzle": (255, 255, 255),
+       "ink": (38, 30, 36), "tongue": (255, 110, 140), "shine": (255, 255, 255)}
 DOG_GREY = {"head": (70, 70, 84), "ear": (58, 58, 70), "patch": (63, 63, 76), "muzzle": (88, 88, 102),
             "ink": (40, 40, 50), "tongue": (80, 80, 94), "shine": (100, 100, 114)}
 
@@ -101,8 +108,13 @@ def rounded(size, radius, fill=None, outline=None, width=0, scale=4):
     return img.resize(size, Image.LANCZOS)
 
 
-nine_patch(rounded((48, 48), 14, outline=PINK + (255,), width=5), (20, 28), (20, 28), "focus.9.png")
-nine_patch(rounded((56, 56), 28, fill=PINK + (255,)), (27, 29), (27, 29), "pill.9.png")
+for key, rgb in THEMES.items():
+    nine_patch(rounded((48, 48), 14, outline=rgb + (255,), width=5), (20, 28), (20, 28), f"focus_{key}.9.png")
+    nine_patch(rounded((56, 56), 28, fill=rgb + (255,)), (27, 29), (27, 29), f"pill_{key}.9.png")
+    nine_patch(rounded((28, 28), 10, fill=rgb + (255,)), (12, 16), (12, 16), f"chip_{key}.9.png")
+    spin = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    ImageDraw.Draw(spin).arc([16, 16, 240, 240], 0, 270, fill=rgb + (255,), width=20)
+    spin.resize((64, 64), Image.LANCZOS).save(OUT / f"spinner_{key}.png")
 nine_patch(rounded((56, 56), 28, fill=(255, 255, 255, 34)), (27, 29), (27, 29), "pill_dim.9.png")
 nine_patch(rounded((32, 32), 8, fill=(0, 0, 0, 170)), (12, 20), (12, 20), "badge.9.png")
 nine_patch(rounded((40, 40), 12, fill=(28, 28, 36, 255)), (16, 24), (16, 24), "card.9.png")
@@ -117,9 +129,6 @@ logo = Image.new("RGBA", (96, 80), (0, 0, 0, 0))
 paste_centered(logo, dog(80), 48, 40)
 logo.save(OUT / "logo.png")
 
-spin = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-ImageDraw.Draw(spin).arc([16, 16, 240, 240], 0, 270, fill=PINK + (255,), width=20)
-spin.resize((64, 64), Image.LANCZOS).save(OUT / "spinner.png")
 
 # left-to-right scrim for the detail page backdrop, top scrim for the player HUD
 scrim = Image.new("RGBA", (480, 4), (0, 0, 0, 0))
@@ -138,4 +147,3 @@ bottom = top.transpose(Image.FLIP_TOP_BOTTOM)
 bottom.save(OUT / "scrim_bottom.png")
 print("ui chrome ->", OUT)
 
-nine_patch(rounded((28, 28), 10, fill=PINK + (255,)), (12, 16), (12, 16), "chip.9.png")

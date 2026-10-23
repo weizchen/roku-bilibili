@@ -13,14 +13,14 @@
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
   <script type="text/brightscript" uri="VideoCard.brs" />
   <children>
-    <Poster id="ring" uri="pkg:/images/focus.9.png" opacity="0" />
+    <Poster id="ring" opacity="0" />
     <Poster id="frame" uri="pkg:/images/card.9.png" />
     <Poster id="poster" loadDisplayMode="scaleToZoom"
             loadingBitmapUri="pkg:/images/placeholder.png" failedBitmapUri="pkg:/images/placeholder.png" />
     <Poster id="scrim" uri="pkg:/images/scrim_bottom.png" visible="false" />
     <Label id="stats" color="0xFFFFFFFF" visible="false" />
     <Rectangle id="progressBg" color="0xFFFFFF40" visible="false" />
-    <Rectangle id="progressBar" color="0xFB7299FF" visible="false" />
+    <Rectangle id="progressBar" visible="false" />
     <Poster id="badge" uri="pkg:/images/badge.9.png" visible="false" />
     <Label id="duration" color="0xFFFFFFFF" font="font:SmallestSystemFont" />
     <Label id="title" color="0xD2D2DCFF" wrap="true" maxLines="2" lineSpacing="2" />

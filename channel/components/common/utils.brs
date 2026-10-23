@@ -8,6 +8,42 @@ function cjkFont(size as Integer) as Object
     return f
 end function
 
+' ---------- theme ----------
+' Accent colours (keep in step with THEMES in scripts/make-art.py, which draws the
+' matching focus_/pill_/chip_/spinner_ images). onAccent is the text colour on an
+' accent background: dark on the light accents, white on the deep ones.
+
+function themes() as Object
+    return [
+        { key: "yellow", name: "黄色", accent: "0xFFC93CFF", onAccent: "0x1B1B20FF" }
+        { key: "pink", name: "粉色", accent: "0xFB7299FF", onAccent: "0xFFFFFFFF" }
+        { key: "blue", name: "蓝色", accent: "0x3D8BFDFF", onAccent: "0xFFFFFFFF" }
+        { key: "green", name: "绿色", accent: "0x34D399FF", onAccent: "0x10261CFF" }
+        { key: "purple", name: "紫色", accent: "0x9B7BFFFF", onAccent: "0xFFFFFFFF" }
+    ]
+end function
+
+function themeByKey(key as String) as Object
+    for each t in themes()
+        if t.key = key then return t
+    end for
+    return themes()[0]
+end function
+
+function accent() as String
+    return m.global.theme.accent
+end function
+
+function onAccent() as String
+    return m.global.theme.onAccent
+end function
+
+' "pill" -> pkg:/images/pill_yellow.9.png; spinner art is not a 9-patch
+function themed(name as String) as String
+    if name = "spinner" then return "pkg:/images/spinner_" + m.global.theme.key + ".png"
+    return "pkg:/images/" + name + "_" + m.global.theme.key + ".9.png"
+end function
+
 function isNil(v as Dynamic) as Boolean
     t = type(v)
     return t = "Invalid" or t = "roInvalid" or t = "<uninitialized>"

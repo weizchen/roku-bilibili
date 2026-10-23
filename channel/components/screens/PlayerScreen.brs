@@ -18,13 +18,13 @@ sub init()
     m.dmHint.font = cjkFont(24)
     m.top.findNode("loadingText").font = cjkFont(28)
     m.error.font = cjkFont(32)
-    m.spinner.poster.uri = "pkg:/images/spinner.png"
+    m.spinner.poster.uri = themed("spinner")
+    m.quality.color = accent()
     m.spinner.control = "start"
 
-    pink = "0xFB7299FF"
-    m.video.trickPlayBar.filledBarBlendColor = pink
-    m.video.bufferingBar.filledBarBlendColor = pink
-    m.video.retrievingBar.filledBarBlendColor = pink
+    m.video.trickPlayBar.filledBarBlendColor = accent()
+    m.video.bufferingBar.filledBarBlendColor = accent()
+    m.video.retrievingBar.filledBarBlendColor = accent()
     m.video.notificationInterval = 1
 
     m.video.observeField("state", "onState")

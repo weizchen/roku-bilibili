@@ -7,6 +7,8 @@ sub init()
     m.messageLabel.font = cjkFont(26)
     m.list.font = cjkFont(30)
     m.list.focusedFont = cjkFont(30)
+    m.list.focusBitmapUri = themed("chip")
+    m.list.focusedColor = onAccent()
     m.list.observeField("itemSelected", "onSelected")
     m.top.observeField("focusedChild", "onFocusChanged")
 end sub

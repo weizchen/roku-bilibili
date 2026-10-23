@@ -15,7 +15,10 @@ sub init()
     m.message.font = cjkFont(30)
     m.sug.font = cjkFont(28)
     m.sug.focusedFont = cjkFont(28)
-    m.spinner.poster.uri = "pkg:/images/spinner.png"
+    m.spinner.poster.uri = themed("spinner")
+    m.sugTitle.color = accent()
+    m.sug.focusBitmapUri = themed("chip")
+    m.sug.focusedColor = onAccent()
 
     m.query = ""
     m.focusNode = m.kb

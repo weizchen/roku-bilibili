@@ -16,6 +16,9 @@ sub init()
     m.note.font = cjkFont(24)
     m.buttons.textFont = cjkFont(32)
     m.buttons.focusedTextFont = cjkFont(32)
+    m.buttons.focusBitmapUri = themed("pill")
+    m.buttons.focusedTextColor = onAccent()
+    m.status.color = accent()
     m.note.text = "登录信息只保存在这台电视上"
 
     m.poll.observeField("fire", "onPoll")

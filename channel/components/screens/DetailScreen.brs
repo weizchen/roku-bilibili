@@ -24,7 +24,12 @@ sub init()
     m.parts.font = cjkFont(26)
     m.parts.focusedFont = cjkFont(26)
     m.related.rowLabelFont = cjkFont(30)
-    m.spinner.poster.uri = "pkg:/images/spinner.png"
+    m.spinner.poster.uri = themed("spinner")
+    m.meta.color = accent()
+    m.buttons.focusBitmapUri = themed("pill")
+    m.buttons.focusedTextColor = onAccent()
+    m.parts.focusBitmapUri = themed("chip")
+    m.parts.focusedColor = onAccent()
     m.spinner.control = "start"
 
     m.video = invalid

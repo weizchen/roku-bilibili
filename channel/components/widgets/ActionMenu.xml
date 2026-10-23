@@ -17,7 +17,7 @@
     <Label id="titleLabel" translation="[610,340]" width="700" maxLines="2" wrap="true" color="0xFFFFFFFF" />
     <Label id="messageLabel" translation="[610,420]" width="700" wrap="true" color="0xB4B4C0FF" />
     <LabelList id="list" translation="[600,460]" itemSize="[720,66]" numRows="5" itemSpacing="[0,4]"
-               color="0xD2D2DCFF" focusedColor="0xFFFFFFFF"
-               focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png" />
+               color="0xD2D2DCFF"
+               focusFootprintBitmapUri="pkg:/images/clear.png" />
   </children>
 </component>

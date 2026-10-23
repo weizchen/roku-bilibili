@@ -10,11 +10,11 @@
       <Group id="qr" />
     </Group>
     <Label id="steps" translation="[980,280]" width="620" wrap="true" lineSpacing="22" color="0xD2D2DCFF" />
-    <Label id="status" translation="[980,560]" width="620" wrap="true" color="0xFB7299FF" />
+    <Label id="status" translation="[980,560]" width="620" wrap="true" />
     <ButtonGroup id="buttons" translation="[810,480]" visible="false"
                  minWidth="300" buttonHeight="76"
-                 focusBitmapUri="pkg:/images/pill.9.png" focusFootprintBitmapUri="pkg:/images/pill_dim.9.png"
-                 iconUri="" focusedIconUri="" textColor="0xE6E6EBFF" focusedTextColor="0xFFFFFFFF" />
+                 focusFootprintBitmapUri="pkg:/images/pill_dim.9.png"
+                 iconUri="" focusedIconUri="" textColor="0xE6E6EBFF" />
     <Label id="note" translation="[0,880]" width="1920" horizAlign="center" color="0x6E6E7EFF" />
     <Timer id="poll" duration="2" repeat="true" />
     <Timer id="leave" duration="1.5" />

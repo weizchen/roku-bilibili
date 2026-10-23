@@ -11,7 +11,14 @@ sub init()
     m.progressBg = m.top.findNode("progressBg")
     m.progressBar = m.top.findNode("progressBar")
     m.w = 0
+    applyTheme()
+    m.global.observeField("theme", "applyTheme")
     layout()
+end sub
+
+sub applyTheme()
+    m.ring.uri = themed("focus")
+    m.progressBar.color = accent()
 end sub
 
 sub layout()

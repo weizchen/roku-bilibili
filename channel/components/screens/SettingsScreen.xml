@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Settings: theme colour and danmaku defaults. Left/right changes a row and applies at once. -->
+<component name="SettingsScreen" extends="Group">
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="SettingsScreen.brs" />
+  <children>
+    <Label id="heading" translation="[96,56]" text="设置" color="0xFFFFFFFF" />
+    <Label id="hint" translation="[96,128]" text="上下选择，左右调整，马上生效" color="0x8E8E9EFF" />
+    <Group id="rows" translation="[80,210]" />
+
+    <!-- live preview of the accent -->
+    <Group translation="[1180,210]">
+      <Poster uri="pkg:/images/card.9.png" width="620" height="460" />
+      <Poster uri="pkg:/images/logo.png" translation="[50,48]" width="120" height="100" />
+      <Label id="previewBrand" translation="[190,70]" text="狗哩狗哩" />
+      <Poster id="previewPill" translation="[50,200]" width="260" height="76" />
+      <Label id="previewPillText" translation="[50,200]" width="260" height="76" horizAlign="center" vertAlign="center" text="▶  播放" />
+      <Rectangle id="previewBarBg" translation="[50,330]" width="520" height="8" color="0xFFFFFF33" />
+      <Rectangle id="previewBar" translation="[50,330]" width="300" height="8" />
+      <Label id="previewText" translation="[50,370]" width="520" text="影视飓风    2天前" />
+    </Group>
+  </children>
+</component>

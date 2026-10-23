@@ -1,6 +1,7 @@
 sub init()
     m.top.backgroundColor = "0x0F0F14FF"
     m.top.backgroundUri = ""
+    m.global.theme = themeByKey(loadSetting("theme", "yellow"))
     m.stack = []
     m.reports = []   ' history reports in flight; kept here so they outlive the player
     m.container = m.top.findNode("stack")
@@ -62,6 +63,8 @@ sub onRoute()
         push(CreateObject("roSGNode", "SearchScreen"))
     else if action = "login" then
         push(CreateObject("roSGNode", "LoginScreen"))
+    else if action = "settings" then
+        push(CreateObject("roSGNode", "SettingsScreen"))
     else if action = "toast" then
         showToast(strOf(a.text))
     else if action = "report" then

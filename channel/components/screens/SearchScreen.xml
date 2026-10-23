@@ -9,10 +9,10 @@
     <Group translation="[86,150]" scale="[0.8,0.8]">
       <MiniKeyboard id="kb" />
     </Group>
-    <Label id="sugTitle" translation="[96,712]" text="热门搜索" color="0xFB7299FF" />
+    <Label id="sugTitle" translation="[96,712]" text="热门搜索" />
     <LabelList id="sug" translation="[84,758]" itemSize="[560,52]" numRows="6" itemSpacing="[0,0]"
-               color="0xD2D2DCFF" focusedColor="0xFFFFFFFF"
-               focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png"
+               color="0xD2D2DCFF"
+               focusFootprintBitmapUri="pkg:/images/clear.png"
                vertFocusAnimationStyle="floatingFocus" />
     <Label id="resultTitle" translation="[720,44]" width="1110" maxLines="1" color="0xFFFFFFFF" />
     <MarkupGrid id="grid" translation="[720,120]" itemComponentName="VideoCard"

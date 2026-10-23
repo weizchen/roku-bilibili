@@ -15,14 +15,14 @@
 
     <Group id="info" visible="false">
       <Label id="title" translation="[96,86]" width="1060" wrap="true" maxLines="2" lineSpacing="6" color="0xFFFFFFFF" />
-      <Label id="meta" translation="[96,236]" width="1060" color="0xFB7299FF" />
+      <Label id="meta" translation="[96,236]" width="1060" />
       <Label id="stats" translation="[96,282]" width="1060" color="0xB4B4C0FF" />
       <Label id="desc" translation="[96,296]" width="1040" wrap="true" maxLines="5" lineSpacing="6" color="0xB4B4C0FF" />
       <ButtonGroup id="buttons" translation="[96,520]" layoutDirection="horiz" itemSpacings="[24]"
                    minWidth="260" buttonHeight="76"
-                   focusBitmapUri="pkg:/images/pill.9.png" focusFootprintBitmapUri="pkg:/images/pill_dim.9.png"
+                   focusFootprintBitmapUri="pkg:/images/pill_dim.9.png"
                    iconUri="" focusedIconUri=""
-                   textColor="0xE6E6EBFF" focusedTextColor="0xFFFFFFFF" />
+                   textColor="0xE6E6EBFF" />
 
       <Poster id="cover" translation="[1236,96]" width="588" height="331" loadWidth="588" loadHeight="331"
               loadDisplayMode="scaleToZoom" loadingBitmapUri="pkg:/images/placeholder.png" />
@@ -30,8 +30,8 @@
         <Poster uri="pkg:/images/card.9.png" translation="[-20,-14]" width="628" height="510" opacity="0.85" />
         <Label id="partsTitle" color="0xFFFFFFFF" />
         <LabelList id="parts" translation="[0,58]" itemSize="[588,58]" numRows="7" itemSpacing="[0,4]"
-                   color="0xB4B4C0FF" focusedColor="0xFFFFFFFF"
-                   focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png"
+                   color="0xB4B4C0FF"
+                   focusFootprintBitmapUri="pkg:/images/clear.png"
                    vertFocusAnimationStyle="floatingFocus" />
       </Group>
 

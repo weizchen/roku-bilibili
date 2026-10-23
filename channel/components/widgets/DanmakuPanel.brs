@@ -17,7 +17,7 @@ sub init()
         g = group.createChild("Group")
         g.translation = [0, i * 104]
         chip = g.createChild("Poster")
-        chip.uri = "pkg:/images/chip.9.png"
+        chip.uri = themed("chip")
         chip.width = 480
         chip.height = 84
         name = g.createChild("Label")
@@ -82,8 +82,8 @@ sub paint()
         r.value.text = "‹  " + m.rowsDef[i].labels[valueIndex(i)] + "  ›"
         dimmed = (i = 1 and not m.top.enabled)
         if focused then
-            r.name.color = "0xFFFFFFFF"
-            r.value.color = "0xFFFFFFFF"
+            r.name.color = onAccent()
+            r.value.color = onAccent()
         else if dimmed then
             r.name.color = "0x55555FFF"
             r.value.color = "0x55555FFF"

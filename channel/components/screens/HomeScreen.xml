@@ -5,7 +5,7 @@
   <script type="text/brightscript" uri="HomeScreen.brs" />
   <children>
     <Poster uri="pkg:/images/logo.png" translation="[78,30]" width="84" height="70" />
-    <Label id="brand" translation="[170,42]" text="狗哩狗哩" color="0xFB7299FF" />
+    <Label id="brand" translation="[170,42]" text="狗哩狗哩" />
     <Group id="tabs" translation="[440,34]" />
     <Label id="account" translation="[1330,48]" width="500" horizAlign="right" color="0x8E8E9EFF" />
     <Label id="hint" translation="[1330,96]" width="500" horizAlign="right" color="0x6E6E7EFF" visible="false" />

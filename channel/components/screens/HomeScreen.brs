@@ -6,6 +6,7 @@ sub init()
         { key: "history", name: "历史" }
         { key: "search", name: "搜索" }
         { key: "me", name: "我的" }
+        { key: "settings", name: "设置" }
     ]
     m.grid = m.top.findNode("grid")
     m.tabsGroup = m.top.findNode("tabs")
@@ -23,7 +24,6 @@ sub init()
     m.historyCursor = {}
     m.historyEnd = false
     m.message.font = cjkFont(32)
-    m.spinner.poster.uri = "pkg:/images/spinner.png"
 
     buildTabs()
     m.cache = {}       ' tab key -> ContentNode
@@ -37,6 +37,8 @@ sub init()
     m.global.observeField("loggedIn", "onLoginChanged")
     m.top.observeField("focusedChild", "onFocusChanged")
 
+    applyTheme()
+    m.global.observeField("theme", "applyTheme")
     onLoginChanged()
     selectTab(0)
 end sub
@@ -49,7 +51,6 @@ sub buildTabs()
         g = group.createChild("Group")
         g.translation = [x, 0]
         pill = g.createChild("Poster")
-        pill.uri = "pkg:/images/pill.9.png"
         pill.width = 120
         pill.height = 60
         pill.visible = false
@@ -63,12 +64,23 @@ sub buildTabs()
         bar = g.createChild("Rectangle")
         bar.width = 30
         bar.height = 5
-        bar.color = "0xFB7299FF"
         bar.translation = [45, 64]
         bar.visible = false
         m.tabNodes.Push({ pill: pill, label: lbl, bar: bar })
         x = x + 136
     end for
+end sub
+
+' Live: the settings screen changes the theme while this screen stays in the stack.
+sub applyTheme()
+    m.top.findNode("brand").color = accent()
+    m.spinner.poster.uri = themed("spinner")
+    for each n in m.tabNodes
+        n.pill.uri = themed("pill")
+        n.bar.color = accent()
+    end for
+    if m.global.loggedIn then m.account.color = accent()
+    paintTabs()
 end sub
 
 sub paintTabs()
@@ -79,9 +91,9 @@ sub paintTabs()
         n.pill.visible = onBar
         n.bar.visible = selected and not onBar
         if onBar then
-            n.label.color = "0xFFFFFFFF"
+            n.label.color = onAccent()
         else if selected then
-            n.label.color = "0xFB7299FF"
+            n.label.color = accent()
         else
             n.label.color = "0xB4B4C0FF"
         end if
@@ -97,7 +109,21 @@ sub selectTab(i as Integer)
     paintTabs()
     key = currentKey()
     m.hint.visible = (key = "history" and m.global.loggedIn)
-    if key = "search" or key = "me" then return
+    ' these tabs open their own screen; say so instead of leaving an old grid or spinner up
+    if key = "search" then
+        showMessage("按 OK 搜索视频")
+        return
+    else if key = "me" then
+        if m.global.loggedIn then
+            showMessage("按 OK 管理账号")
+        else
+            showMessage("按 OK 扫码登录，登录后可看 1080P")
+        end if
+        return
+    else if key = "settings" then
+        showMessage("按 OK 打开设置（主题色、弹幕）")
+        return
+    end if
     ' history moves as you watch, so it is fetched fresh every time
     if key <> "history" and m.cache.DoesExist(key) then
         showContent(m.cache[key])
@@ -188,7 +214,7 @@ end sub
 
 sub refresh()
     key = currentKey()
-    if key = "search" or key = "me" then return
+    if key = "search" or key = "me" or key = "settings" then return
     m.cache.Delete(key)
     load(key, false)
 end sub
@@ -210,7 +236,7 @@ end sub
 sub onLoginChanged()
     if m.global.loggedIn then
         m.account.text = "已登录  ·  1080P"
-        m.account.color = "0xFB7299FF"
+        m.account.color = accent()
     else
         m.account.text = "未登录  ·  最高 720P"
         m.account.color = "0x8E8E9EFF"
@@ -347,6 +373,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             k = currentKey()
             if k = "search" then
                 navigate({ action: "search" })
+            else if k = "settings" then
+                navigate({ action: "settings" })
             else if k = "me" or (k = "history" and not m.global.loggedIn) then
                 navigate({ action: "login" })
             else if m.message.visible then
