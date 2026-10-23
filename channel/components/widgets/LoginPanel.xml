@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- QR login shown inside the 我的 tab. While `active`, it keeps a fresh code up and polls;
+     scanning with the bilibili phone app logs this TV in (cookies stay on the TV). -->
+<component name="LoginPanel" extends="Group">
+  <interface>
+    <field id="active" type="boolean" onChange="onActive" />
+    <field id="refresh" type="boolean" alwaysNotify="true" onChange="onRefresh" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="LoginPanel.brs" />
+  <children>
+    <Label id="heading" translation="[0,150]" width="1920" horizAlign="center" color="0xFFFFFFFF" />
+    <Group id="qrBox" translation="[420,260]">
+      <Rectangle id="qrBg" width="460" height="460" color="0xFFFFFFFF" />
+      <Group id="qr" />
+    </Group>
+    <Label id="steps" translation="[980,290]" width="620" wrap="true" lineSpacing="22" color="0xD2D2DCFF" />
+    <Label id="status" translation="[980,570]" width="620" wrap="true" />
+    <Label id="note" translation="[0,880]" width="1920" horizAlign="center" color="0x6E6E7EFF" />
+    <Timer id="poll" duration="2" repeat="true" />
+  </children>
+</component>

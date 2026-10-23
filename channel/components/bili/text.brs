@@ -128,12 +128,14 @@ end function
 ' Normalise the many shapes bilibili uses for a video card into one.
 function card(v as Object) as Object
     owner = v.owner
+    if type(owner) <> "roAssociativeArray" then owner = v.upper
     if type(owner) <> "roAssociativeArray" then owner = {}
     stat = v.stat
+    if type(stat) <> "roAssociativeArray" then stat = v.cnt_info
     if type(stat) <> "roAssociativeArray" then stat = {}
     pic = strOf(firstOf([v.pic, v.cover, v.first_frame]))
     dur = secondsOf(v.duration)
-    published = intOf(firstOf([v.pubdate, v.ctime, v.senddate]))
+    published = intOf(firstOf([v.pubdate, v.pubtime, v.ctime, v.senddate]))
     return {
         bvid: strOf(v.bvid)
         aid: strOf(firstOf([v.aid, v.id]))
@@ -143,7 +145,7 @@ function card(v as Object) as Object
         poster: sized(pic, 480, 300)
         duration: dur
         duration_text: durationBadge(dur)
-        view_text: fmtCount(firstOf([stat.view, v.play]))
+        view_text: fmtCount(firstOf([stat.view, stat.play, v.play]))
         date_text: ago(published)
         progress: 0
     }

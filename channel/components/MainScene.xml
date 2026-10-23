@@ -15,5 +15,6 @@
       <Label id="toastText" height="72" vertAlign="center" horizAlign="center" color="0xF0F0F5FF" />
     </Group>
     <Timer id="toastTimer" duration="3.5" />
+    <Timer id="rebuildTimer" duration="0.1" />
   </children>
 </component>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Home: tab bar (推荐 热门 排行 历史 搜索 我的) over a four-column video grid. -->
+<!-- Home: tab bar over the tab's content -- a four-column video grid for the feeds,
+     history and favourites, the QR login (我的, logged out) or the settings rows. -->
 <component name="HomeScreen" extends="Group">
   <interface>
-    <field id="startTab" type="string" onChange="onStartTab" />
+    <!-- {tab, row}: where to land after MainScene rebuilds this screen for a new font -->
+    <field id="resume" type="assocarray" onChange="onResume" />
   </interface>
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
   <script type="text/brightscript" uri="HomeScreen.brs" />
@@ -18,6 +20,8 @@
     <Label id="message" translation="[160,470]" width="1600" horizAlign="center"
            wrap="true" color="0x8E8E9EFF" visible="false" />
     <BusySpinner id="spinner" translation="[928,500]" visible="false" />
+    <LoginPanel id="login" visible="false" />
+    <SettingsPanel id="settings" visible="false" />
     <ActionMenu id="menu" visible="false" />
   </children>
 </component>

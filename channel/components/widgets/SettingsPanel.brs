@@ -49,7 +49,6 @@ sub init()
 end sub
 
 sub applyFonts()
-    m.top.findNode("heading").font = cjkFont(52)
     m.top.findNode("hint").font = cjkFont(26)
     m.top.findNode("previewBrand").font = cjkFont(48)
     m.top.findNode("previewPillText").font = cjkFont(32)
@@ -112,10 +111,16 @@ sub change(delta as Integer, wrap as Boolean)
     paint()
 end sub
 
+sub onRow()
+    m.sel = m.top.row
+    paint()
+end sub
+
 sub paint()
+    if m.rows = invalid then return
     for i = 0 to m.rows.Count() - 1
         r = m.rows[i]
-        focused = (i = m.sel)
+        focused = (i = m.sel) and m.top.active
         r.chip.uri = themed("chip")
         r.chip.visible = focused
         r.swatch.color = accent()
@@ -135,6 +140,7 @@ sub paint()
     m.top.findNode("previewText").color = "0x8E8E9EFF"
 end sub
 
+' up on the first row, back, etc. fall through to the home screen
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
     if key = "up" and m.sel > 0 then
@@ -148,7 +154,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     else if key = "OK" then
         change(1, true)
     else
-        return false   ' back goes to MainScene, which pops this screen
+        return false
     end if
     paint()
     return true

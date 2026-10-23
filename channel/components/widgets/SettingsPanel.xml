@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Settings: theme colour and danmaku defaults. Left/right changes a row and applies at once. -->
-<component name="SettingsScreen" extends="Group">
+<!-- Settings rows shown right under the home tab bar: theme, font, danmaku defaults.
+     Left/right changes a row and applies at once. `active` = it holds focus. -->
+<component name="SettingsPanel" extends="Group">
+  <interface>
+    <field id="active" type="boolean" onChange="paint" />
+    <field id="row" type="integer" onChange="onRow" />
+  </interface>
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
-  <script type="text/brightscript" uri="SettingsScreen.brs" />
+  <script type="text/brightscript" uri="SettingsPanel.brs" />
   <children>
-    <Label id="heading" translation="[96,56]" text="设置" color="0xFFFFFFFF" />
-    <Label id="hint" translation="[96,128]" text="上下选择，左右调整，马上生效" color="0x8E8E9EFF" />
+    <Label id="hint" translation="[96,150]" text="按「下」进入，上下选择，左右调整，马上生效" color="0x8E8E9EFF" />
     <Group id="rows" translation="[80,210]" />
 
     <!-- live preview of the accent -->

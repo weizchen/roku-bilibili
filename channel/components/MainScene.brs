@@ -4,7 +4,9 @@ sub init()
     m.global.theme = themeByKey(loadSetting("theme", "yellow"))
     m.global.font = fontByKey(loadSetting("font", "kai"))
     m.global.observeField("font", "onFontChanged")
-    m.fontChanged = false
+    m.global.observeField("loggedIn", "onLoggedIn")
+    m.rebuildTimer = m.top.findNode("rebuildTimer")
+    m.rebuildTimer.observeField("fire", "rebuildHome")
     m.stack = []
     m.reports = []   ' history reports in flight; kept here so they outlive the player
     m.container = m.top.findNode("stack")
@@ -22,9 +24,21 @@ sub init()
     if m.global.loggedIn then m.navTask = api("nav", invalid, "onNav")
 end sub
 
+sub onLoggedIn()
+    if m.global.loggedIn then
+        m.navTask = api("nav", invalid, "onNav")
+    else
+        m.global.uname = ""
+    end if
+end sub
+
+' confirms the session and fetches the name shown at the top right
 sub onNav(event as Object)
     res = event.getData()
-    if res.ok and not boolOf(res.data.logged_in) then
+    if not res.ok then return
+    if boolOf(res.data.logged_in) then
+        m.global.uname = strOf(res.data.uname)
+    else if m.global.loggedIn then
         m.global.loggedIn = false
         showToast("登录已过期，请重新扫码登录")
     end if
@@ -42,29 +56,26 @@ sub pop()
     if m.stack.Count() <= 1 then return
     screen = m.stack.Pop()
     m.container.removeChild(screen)
-    if m.fontChanged and m.stack.Count() = 1 then
-        rebuildHome()
-        return
-    end if
     top = m.stack.Peek()
     top.visible = true
     top.setFocus(true)
 end sub
 
 ' Labels keep the Font node they were built with, so a new font means a new home
-' screen (everything else is created afresh when opened).
+' screen (everything else is created afresh when opened). The font is picked in
+' the settings rows on that very screen, so rebuild once the key press is over.
 sub onFontChanged()
-    m.fontChanged = true
     m.toastText.font = cjkFont(30)
+    m.rebuildTimer.control = "start"
 end sub
 
 sub rebuildHome()
-    m.fontChanged = false
+    if m.stack.Count() <> 1 then return
     old = m.stack.Pop()
     m.container.removeChild(old)
     home = CreateObject("roSGNode", "HomeScreen")
     push(home)
-    home.startTab = "settings"
+    home.resume = { tab: "settings", row: 1 }
 end sub
 
 sub onRoute()
@@ -84,10 +95,6 @@ sub onRoute()
         s.request = a
     else if action = "search" then
         push(CreateObject("roSGNode", "SearchScreen"))
-    else if action = "login" then
-        push(CreateObject("roSGNode", "LoginScreen"))
-    else if action = "settings" then
-        push(CreateObject("roSGNode", "SettingsScreen"))
     else if action = "toast" then
         showToast(strOf(a.text))
     else if action = "report" then

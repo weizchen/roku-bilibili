@@ -7,6 +7,8 @@ sub init()
     m.messageLabel.font = cjkFont(26)
     m.list.font = cjkFont(30)
     m.list.focusedFont = cjkFont(30)
+    ' move the highlight and stop at the ends (LabelList defaults to a wrapping, fixed focus)
+    m.list.vertFocusAnimationStyle = "floatingFocus"
     m.list.focusBitmapUri = themed("chip")
     m.list.focusedColor = onAccent()
     m.list.observeField("itemSelected", "onSelected")
@@ -37,8 +39,13 @@ sub layout()
         m.messageLabel.visible = false
     end if
     m.list.translation = [600, y]
+    ' long lists (many folders) scroll inside at most seven visible rows
     n = 0
     if m.top.options <> invalid then n = m.top.options.Count()
+    if n > 7 then n = 7
+    if n < 1 then n = 1
+    m.list.numRows = n
+    m.list.clippingRect = [0, 0, 720, n * 70]   ' LabelList peeks at the next row otherwise
     m.panel.height = (y - 300) + n * 70 + 30
 end sub
 

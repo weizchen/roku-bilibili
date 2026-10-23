@@ -35,6 +35,10 @@ sub execute()
         res = opReport(p)
     else if op = "progress" then
         res = opProgress(p)
+    else if op = "favfolders" then
+        res = opFavFolders()
+    else if op = "favlist" then
+        res = opFavList(p)
     else if op = "historydelete" then
         res = opHistoryDelete(p)
     else if op = "historyclear" then
@@ -252,6 +256,49 @@ function opPlay(p as Object) as Object
         quality: top.qid
         quality_name: qualityName(top.qid, top.height)
     })
+end function
+
+' ---------- favourites ----------
+
+' The account's own folders (默认收藏夹 first), with how many videos each holds.
+function opFavFolders() as Object
+    uid = strOf(loadCookies().dedeuserid)
+    if uid = "" then return fail("未登录")
+    r = biliApi(apiBase() + "/x/v3/fav/folder/created/list-all", { up_mid: uid, type: 2 })
+    if not r.ok then return fail(r.error)
+    out = []
+    if type(r.data) = "roAssociativeArray" then
+        if type(r.data.list) = "roArray" then
+            for each f in r.data.list
+                title = fit(strOf(f.title))
+                if title = "" then title = "未命名收藏夹"   ' an all-emoji name has nothing left to draw
+                out.Push({ id: strOf(f.id), title: title, count: intOf(f.media_count) })
+            end for
+        end if
+    end if
+    return okWith({ folders: out })
+end function
+
+' One page of a folder, newest favourite first; removed videos are skipped.
+function opFavList(p as Object) as Object
+    page = intOf(p.page)
+    if page < 1 then page = 1
+    r = biliApi(apiBase() + "/x/v3/fav/resource/list", { media_id: strOf(p.id), pn: page, ps: 20, order: "mtime", type: 0, tid: 0, platform: "web" })
+    if not r.ok then return fail(r.error)
+    items = []
+    more = false
+    if type(r.data) = "roAssociativeArray" then
+        more = boolOf(r.data.has_more)
+        if type(r.data.medias) = "roArray" then
+            for each v in r.data.medias
+                if intOf(v.type) = 2 and strOf(v.bvid) <> "" and strOf(v.title) <> "已失效视频" then
+                    v.aid = v.id
+                    items.Push(card(v))
+                end if
+            end for
+        end if
+    end if
+    return okWith({ items: items, last: not more })
 end function
 
 ' ---------- watch progress on the account ----------
