@@ -79,9 +79,21 @@ sub onContent()
     end if
     m.meta.text = meta
     showStats = not c.history and c.viewText <> ""
-    m.stats.text = "▶ " + c.viewText
+    if c.statsText <> "" then
+        m.stats.text = c.statsText   ' live rooms: 人气 …
+    else
+        m.stats.text = "▶ " + c.viewText
+    end if
     m.stats.visible = showStats
     m.scrim.visible = showStats
+    ' live rooms say 直播 in the accent colour; the system font has no CJK glyphs
+    if c.live then
+        m.duration.font = cjkFont(20)
+        m.duration.color = accent()
+    else
+        m.duration.font = "font:SmallestSystemFont"
+        m.duration.color = "0xFFFFFFFF"
+    end if
     m.duration.text = c.durationText
     placeBadge()
 

@@ -95,6 +95,10 @@ sub onRoute()
         s.request = a
     else if action = "search" then
         push(CreateObject("roSGNode", "SearchScreen"))
+    else if action = "live" then
+        s = CreateObject("roSGNode", "LiveScreen")
+        push(s)
+        s.room = { roomid: a.roomid, title: a.title, up: a.up }
     else if action = "favorites" then
         s = CreateObject("roSGNode", "FavoriteScreen")
         push(s)

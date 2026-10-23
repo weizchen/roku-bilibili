@@ -39,6 +39,8 @@ sub execute()
         res = opMe()
     else if op = "favfolders" then
         res = opFavFolders()
+    else if op = "liveplay" then
+        res = opLivePlay(p)
     else if op = "favcovers" then
         res = opFavCovers(p)
     else if op = "favlist" then
@@ -79,6 +81,8 @@ function opHome(p as Object) as Object
         r = biliApi(apiBase() + "/x/web-interface/ranking/v2", { rid: 0, type: "all" })
         if not r.ok then return fail(r.error)
         return okWith({ items: cardsOf(r.data.list) })
+    else if which = "live" then
+        return opLiveList(page)
     else if which = "history" then
         ' paged by cursor: pass back the max / view_at / business of the previous page
         q = { ps: 30, type: "archive" }
@@ -261,6 +265,144 @@ function opPlay(p as Object) as Object
         quality_name: qualityName(top.qid, top.height)
     })
 end function
+
+' ---------- live ----------
+
+function liveApi() as String
+    return "https://api.live.bilibili.com"
+end function
+
+' A live room in the shape of a video card, so the same grid can show it.
+function liveCard(r as Object, followed as Boolean) as Object
+    online = r.online
+    if isNil(online) and type(r.watched_show) = "roAssociativeArray" then online = r.watched_show.num
+    area = strOf(firstOf([r.area_v2_name, r.areaName, r.area_name]))
+    if followed then area = "你关注的"
+    return {
+        bvid: ""
+        roomid: strOf(firstOf([r.roomid, r.room_id]))
+        title: fit(stripTags(strOf(r.title)))
+        up: fit(strOf(r.uname))
+        poster: sized(strOf(firstOf([r.user_cover, r.cover_from_user, r.cover, r.keyframe, r.system_cover])), 480, 300)
+        duration: 0
+        duration_text: "直播"
+        view_text: fmtCount(online)
+        stats_text: "人气 " + fmtCount(online)
+        date_text: fit(area)
+        live: true
+        progress: 0
+    }
+end function
+
+' Page 1 starts with the followed streamers who are live now (when logged in);
+' every page then lists the most watched rooms across the site.
+function opLiveList(page as Integer) as Object
+    items = []
+    seen = {}
+    if page = 1 and isLoggedIn() then
+        r = biliApi(liveApi() + "/xlive/web-ucenter/v1/xfetter/GetWebList", { page: 1, page_size: 30 })
+        if r.ok and type(r.data) = "roAssociativeArray" then
+            if type(r.data.rooms) = "roArray" then
+                for each room in r.data.rooms
+                    c = liveCard(room, true)
+                    if c.roomid <> "" and not seen.DoesExist(c.roomid) then
+                        seen[c.roomid] = true
+                        items.Push(c)
+                    end if
+                end for
+            end if
+        end if
+    end if
+    r = biliApi(liveApi() + "/room/v1/Area/getListByAreaID", { areaId: 0, sort: "online", pageSize: 30, page: page })
+    if not r.ok then
+        if items.Count() > 0 then return okWith({ items: items })
+        return fail(r.error)
+    end if
+    if type(r.data) = "roArray" then
+        for each room in r.data
+            c = liveCard(room, false)
+            if c.roomid <> "" and not seen.DoesExist(c.roomid) then
+                seen[c.roomid] = true
+                items.Push(c)
+            end if
+        end for
+    end if
+    return okWith({ items: items })
+end function
+
+' HLS for the room at the asked quality (the server caps it: 原画 needs a login).
+' Out: url, headers, current quality and the list a viewer can switch between.
+function opLivePlay(p as Object) as Object
+    qn = intOf(p.qn)
+    if qn <= 0 then qn = 10000
+    r = biliApi(liveApi() + "/xlive/web-room/v2/index/getRoomPlayInfo", { room_id: strOf(p.roomid), protocol: 1, format: "1,2", codec: 0, qn: qn, platform: "web" })
+    if not r.ok then return fail(r.error)
+    d = r.data
+    if intOf(d.live_status) <> 1 then return fail("主播现在没有在直播")
+    info = d.playurl_info
+    if type(info) <> "roAssociativeArray" then return fail("拿不到直播地址")
+    pu = info.playurl
+    names = {}
+    if type(pu.g_qn_desc) = "roArray" then
+        for each q in pu.g_qn_desc
+            names["q" + intOf(q.qn).ToStr()] = fit(strOf(q.desc))
+        end for
+    end if
+    ' fmp4 when the loopback server can split its audio out; ts otherwise
+    byFormat = {}
+    for each stream in pu.stream
+        if strOf(stream.protocol_name) = "http_hls" then
+            for each fmt in stream.format
+                for each codec in fmt.codec
+                    if strOf(codec.codec_name) = "avc" then byFormat[strOf(fmt.format_name)] = codec
+                end for
+            end for
+        end if
+    end for
+    best = byFormat["fmp4"]
+    splitAudio = best <> invalid and m.global.mpdPort > 0
+    if not splitAudio then best = byFormat["ts"]
+    if best = invalid then return fail("这个直播间没有电视能播的格式")
+    host = best.url_info[0]
+    url = strOf(host.host) + strOf(best.base_url) + strOf(host.extra)
+    current = intOf(best.current_qn)
+    qualities = []
+    for each a in best.accept_qn
+        n = names["q" + intOf(a).ToStr()]
+        if isNil(n) then n = intOf(a).ToStr()
+        qualities.Push({ qn: intOf(a), name: n })
+    end for
+    cur = names["q" + current.ToStr()]
+    if isNil(cur) then cur = ""
+    out = { url: url, headers: liveHeaders(), qn: current, quality_name: cur, qualities: qualities, sid: "" }
+    if splitAudio then splitLiveAudio(out, strOf(p.roomid))
+    return okWith(out)
+end function
+
+' Roku plays Bilibili's muxed fmp4 without sound. Point the player at a master
+' playlist on the loopback server instead: video straight from the CDN, audio
+' as its own rendition that the server cuts out of the same segments.
+sub splitLiveAudio(out as Object, roomid as String)
+    src = out.url
+    codecs = "avc1.640028"
+    pl = httpGet(src, false, 6000)
+    if pl.code = 200 and liveMapOf(pl.body) <> "" then
+        init = liveFetchBytes(liveBaseOf(src) + liveMapOf(pl.body), out.headers, 6000, "tmp:/live_task_init.m4s")
+        if init <> invalid then codecs = rokuCodecs(mp4AvcCodec(init))   ' 原画 says level 5.0, which Roku turns down
+    end if
+    sid = "live" + roomid + "_" + CreateObject("roDateTime").AsSeconds().ToStr()
+    q = Chr(34)
+    lf = Chr(10)
+    master = "#EXTM3U" + lf + "#EXT-X-VERSION:7" + lf + "#EXT-X-INDEPENDENT-SEGMENTS" + lf
+    master = master + "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=" + q + "aud" + q + ",NAME=" + q + "audio" + q + ",DEFAULT=YES,AUTOSELECT=YES,URI=" + q + sid + "/a.m3u8" + q + lf
+    master = master + "#EXT-X-STREAM-INF:BANDWIDTH=6000000,CODECS=" + q + codecs + ",mp4a.40.2" + q + ",AUDIO=" + q + "aud" + q + lf
+    master = master + src + lf
+    out.sid = sid
+    out.src = src
+    out.base = liveBaseOf(src)
+    out.manifest = master
+    out.url = "http://127.0.0.1:" + m.global.mpdPort.ToStr() + "/" + sid + ".m3u8"
+end sub
 
 ' ---------- 我的: account card and favourites ----------
 

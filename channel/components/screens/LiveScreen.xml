@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Full-screen live room. room = {roomid, title, up}. -->
+<component name="LiveScreen" extends="Group">
+  <interface>
+    <field id="room" type="assocarray" onChange="onRoom" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="LiveScreen.brs" />
+  <children>
+    <Rectangle width="1920" height="1080" color="0x000000FF" />
+    <Video id="video" width="1920" height="1080" />
+    <Group id="hud" visible="false">
+      <Poster uri="pkg:/images/scrim_top.png" width="1920" height="280" />
+      <Label id="title" translation="[96,54]" width="1420" maxLines="1" color="0xFFFFFFFF" />
+      <Label id="sub" translation="[96,114]" width="1420" maxLines="1" color="0xB4B4C0FF" />
+      <Label id="quality" translation="[1520,118]" width="304" horizAlign="right" />
+      <Label id="hint" translation="[1224,166]" width="600" horizAlign="right" color="0x8E8E9EFF" />
+    </Group>
+    <Group id="loading">
+      <BusySpinner id="spinner" translation="[928,470]" />
+      <Label id="loadingText" translation="[0,560]" width="1920" horizAlign="center" color="0xB4B4C0FF" />
+    </Group>
+    <Label id="error" translation="[160,470]" width="1600" horizAlign="center" wrap="true" color="0xFFFFFFFF" visible="false" />
+    <ActionMenu id="menu" visible="false" />
+    <Timer id="hudTimer" duration="4" />
+  </children>
+</component>

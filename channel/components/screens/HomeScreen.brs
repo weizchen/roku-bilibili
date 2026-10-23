@@ -7,6 +7,7 @@ sub init()
         { key: "rcmd", name: "推荐" }
         { key: "popular", name: "热门" }
         { key: "rank", name: "排行" }
+        { key: "live", name: "直播" }
         { key: "history", name: "历史" }
         { key: "search", name: "搜索" }
         { key: "me", name: "我的" }
@@ -188,10 +189,10 @@ sub selectTab(i as Integer)
             m.login.visible = true
             m.login.active = true
         end if
-    else if key <> "history" and m.cache.DoesExist(key) then
+    else if key <> "history" and key <> "live" and m.cache.DoesExist(key) then
         showContent(m.cache[key])
     else
-        ' history moves as you watch, so it is fetched fresh every time
+        ' history moves as you watch and live rooms come and go, so both are fetched fresh
         load(key, false)
     end if
 end sub
@@ -296,7 +297,7 @@ sub onFolders(event as Object)
     missing = []
     for each f in m.favFolders
         node = content.createChild("ContentNode")
-        node.addFields({ folderId: f.id, folderCount: f.count, up: "", viewText: "", dateText: intOf(f.count).ToStr() + " 个视频", durationText: "", seconds: 0, progress: 0, history: false })
+        node.addFields({ folderId: f.id, folderCount: f.count, up: "", viewText: "", statsText: "", dateText: intOf(f.count).ToStr() + " 个视频", durationText: "", seconds: 0, progress: 0, history: false, live: false, roomid: "" })
         node.title = f.title
         if f.cover <> "" then
             node.HDPosterUrl = f.cover
@@ -379,7 +380,7 @@ end sub
 
 sub onItemFocused()
     key = currentKey()
-    if key <> "rcmd" and key <> "popular" and key <> "history" then return
+    if key <> "rcmd" and key <> "popular" and key <> "history" and key <> "live" then return
     content = m.grid.content
     if content = invalid then return
     if m.grid.itemFocused >= content.getChildCount() - 8 then load(key, true)
@@ -388,7 +389,11 @@ end sub
 sub onItemSelected()
     item = m.grid.content.getChild(m.grid.itemSelected)
     if item = invalid then return
-    navigate({ action: "detail", bvid: item.bvid })
+    if item.live then
+        navigate({ action: "live", roomid: item.roomid, title: item.title, up: item.up })
+    else
+        navigate({ action: "detail", bvid: item.bvid })
+    end if
 end sub
 
 sub onLoginChanged()
@@ -400,7 +405,7 @@ sub onLoginChanged()
     m.favFolders = invalid
     if m.tabNodes = invalid then return
     key = currentKey()
-    if key = "rcmd" or key = "history" or key = "me" then selectTab(m.tabIndex)
+    if key = "rcmd" or key = "history" or key = "live" or key = "me" then selectTab(m.tabIndex)
 end sub
 
 ' ---------- focus ----------

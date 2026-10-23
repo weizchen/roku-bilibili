@@ -5,6 +5,7 @@
 Watch Bilibili directly on a Roku TV. **The app runs entirely on the TV by itself** — no computer or server has to stay on; you only need a computer to install it the first time and to update it later.
 
 - Home: recommended, popular and ranking, with every video's publish date
+- Live streams: when you are logged in, the streamers you follow come first while they are live; switch quality from the remote
 - Search with pinyin-initial suggestions (type `ys` and 原神 comes up)
 - QR-code login, up to 1080P when logged in
 - Me: your account info and favourites
@@ -55,6 +56,7 @@ You need a Roku TV or Roku player and a computer (macOS or Linux) on the same Wi
 | 推荐 Recommended | Bilibili's home feed, personalised once you log in; press OK on the tab for a fresh batch |
 | 热门 Popular | What is trending right now; updates often and keeps scrolling |
 | 排行 Ranking | The site-wide chart: the 100 videos that did best over the last few days, refreshed about daily |
+| 直播 Live | Rooms that are live now, most watched first; logged in, the streamers you follow come first |
 | 历史 History | Your watch history with how far you got |
 | 搜索 Search | Press OK to open search |
 | 我的 Me | Logged out: the login QR code. Logged in: your account info on top and your favourite folders below — open a folder to see its videos |
@@ -71,6 +73,7 @@ You need a Roku TV or Roku player and a computer (macOS or Linux) on the same Wi
 | Settings | Up/Down pick a row, Left/Right change it, applied immediately |
 | Video page | Down for related videos, Right for parts |
 | Player | **OK pauses / resumes**, Left/Right seek, **Down opens danmaku settings**, Up shows the title, Back exits (your position is saved) |
+| Live stream | Down switches quality, Up or OK shows the title, Back exits |
 | Search | Type on the on-screen keyboard; pinyin initials work |
 
 Deleting or clearing history and logging out ask for confirmation, with Cancel selected by default.
@@ -80,14 +83,6 @@ Deleting or clearing history and logging out ask for confirmation, with Cancel s
 Open 我的 and scan the QR code on screen with the Bilibili phone app, then confirm on the phone. Logged out, playback tops out at 720P; logged in, 1080P. Your login is stored only on this TV.
 
 Once you are logged in, watch progress syncs with your account: what you watch on the TV shows up in your phone's history, and a video you half-watched on another device continues from there when you open it on the TV.
-
-### Cast a video from your computer
-
-```bash
-scripts/cast.sh "https://www.bilibili.com/video/BV1GJ411x7h7"
-```
-
-The TV opens that video and starts playing it.
 
 ## Fonts
 

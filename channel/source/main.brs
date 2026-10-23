@@ -10,7 +10,7 @@ sub Main(args as Dynamic)
     m.global = screen.GetGlobalNode()
     ' wbiKey/wbiAt: cached signing key; mpd*: manifest the loopback server hands the player
     ' theme and font are filled in by MainScene (it owns the theme table) before any screen exists
-    m.global.AddFields({ loggedIn: hasSession(), wbiKey: "", wbiAt: 0, mpd: "", mpdId: "", mpdPort: 0, theme: {}, font: {}, uname: "" })
+    m.global.AddFields({ loggedIn: hasSession(), wbiKey: "", wbiAt: 0, mpd: "", mpdId: "", mpdPort: 0, liveId: "", liveSrc: "", liveBase: "", liveHeaders: [], theme: {}, font: {}, uname: "" })
 
     scene = screen.CreateScene("MainScene")
     screen.Show()

@@ -19,40 +19,23 @@ THEMES = {
 CJK = "/System/Library/Fonts/Hiragino Sans GB.ttc"
 
 
-# palettes for the mascot: a white puppy (it sits beside any accent), and a grey one for placeholders
-DOG = {"head": (242, 242, 246), "ear": (205, 205, 214), "patch": (222, 222, 230), "muzzle": (255, 255, 255),
-       "ink": (38, 30, 36), "tongue": (255, 110, 140), "shine": (255, 255, 255)}
-DOG_GREY = {"head": (70, 70, 84), "ear": (58, 58, 70), "patch": (63, 63, 76), "muzzle": (88, 88, 102),
-            "ink": (40, 40, 50), "tongue": (80, 80, 94), "shine": (100, 100, 114)}
+# the 狗哩狗哩 mascot: a hand-drawn white puppy with a transparent background
+PUPPY = Path(__file__).resolve().parent.parent / "art" / "puppy.png"
 
 
-def dog(size: int, pal=DOG) -> Image.Image:
-    """The 狗哩狗哩 mascot: a floppy-eared puppy face, drawn on a 1000-unit grid at 4x and shrunk."""
-    S = size * 4
-    k = S / 1000
-
-    def box(x0, y0, x1, y1):
-        return [x0 * k, y0 * k, x1 * k, y1 * k]
-
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    # ears hang from the top of the head, tilted outwards
-    for cx, angle in ((262, -22), (738, 22)):
-        layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-        ImageDraw.Draw(layer).ellipse(box(cx - 118, 300, cx + 118, 730), fill=pal["ear"])
-        img = Image.alpha_composite(img, layer.rotate(angle, center=(cx * k, 330 * k), resample=Image.BICUBIC))
-    d = ImageDraw.Draw(img)
-    d.ellipse(box(215, 245, 785, 800), fill=pal["head"])
-    d.ellipse(box(545, 368, 705, 535), fill=pal["patch"])
-    d.ellipse(box(345, 548, 655, 772), fill=pal["muzzle"])
-    for ex in (395, 605):
-        d.ellipse(box(ex - 40, 430, ex + 40, 510), fill=pal["ink"])
-        d.ellipse(box(ex - 2, 440, ex + 24, 466), fill=pal["shine"])
-    d.ellipse(box(468, 662, 532, 742), fill=pal["tongue"])
-    d.ellipse(box(438, 548, 562, 628), fill=pal["ink"])
-    d.line([500 * k, 620 * k, 500 * k, 655 * k], fill=pal["ink"], width=int(14 * k))
-    d.arc(box(425, 612, 500, 690), 0, 180, fill=pal["ink"], width=int(14 * k))
-    d.arc(box(500, 612, 575, 690), 0, 180, fill=pal["ink"], width=int(14 * k))
-    return img.resize((size, size), Image.LANCZOS)
+def dog(size: int, grey=False) -> Image.Image:
+    """The mascot cropped to its drawing and fitted into a size x size square;
+    grey gives the dimmed version used for missing thumbnails."""
+    art = Image.open(PUPPY).convert("RGBA")
+    art = art.crop(art.getbbox())
+    scale = size / max(art.size)
+    art = art.resize((max(1, round(art.width * scale)), max(1, round(art.height * scale))), Image.LANCZOS)
+    if grey:
+        lum = art.convert("L").point(lambda v: 40 + v * 48 // 255)
+        art = Image.merge("RGBA", (lum, lum, lum.point(lambda v: v + 10), art.getchannel("A")))
+    square = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    square.paste(art, ((size - art.width) // 2, (size - art.height) // 2), art)
+    return square
 
 
 def paste_centered(canvas: Image.Image, art: Image.Image, cx: int, cy: int):
@@ -122,7 +105,7 @@ nine_patch(rounded((40, 40), 12, fill=(28, 28, 36, 255)), (16, 24), (16, 24), "c
 Image.new("RGBA", (4, 4), (0, 0, 0, 0)).save(OUT / "clear.png")
 
 ph = Image.new("RGB", (480, 270), (28, 28, 36))
-paste_centered(ph, dog(150, DOG_GREY), 240, 135)
+paste_centered(ph, dog(170, grey=True), 240, 135)
 ph.save(OUT / "placeholder.png")
 
 logo = Image.new("RGBA", (96, 80), (0, 0, 0, 0))

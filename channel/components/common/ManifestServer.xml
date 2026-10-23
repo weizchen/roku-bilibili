@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Loopback HTTP server for DASH manifests: Roku only plays an MPD it can fetch
-     over HTTP, so the channel serves m.global.mpd itself on 127.0.0.1. -->
+<!-- Loopback HTTP server on 127.0.0.1. Roku only plays a manifest it can fetch over
+     HTTP, so the channel serves the DASH MPD (m.global.mpd) itself, and for live
+     rooms the HLS master playlist plus an audio-only rendition cut from the
+     muxed fMP4 stream, which Roku would otherwise play without sound. -->
 <component name="ManifestServer" extends="Task">
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="fmp4.brs" />
   <script type="text/brightscript" uri="ManifestServer.brs" />
 </component>

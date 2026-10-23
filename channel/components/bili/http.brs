@@ -11,6 +11,11 @@ function mediaHeaders() as Object
     return ["Referer: https://www.bilibili.com/", "User-Agent: " + biliUA()]
 end function
 
+' Live streams want the live site as Referer.
+function liveHeaders() as Object
+    return ["Referer: https://live.bilibili.com/", "User-Agent: " + biliUA()]
+end function
+
 ' ---------- cookies (registry, lower-cased names -> values) ----------
 
 function cookieNames() as Object
@@ -74,8 +79,8 @@ end function
 ' GET with browser-like headers; returns { code, body, failure, headers }.
 ' headers is roUrlEvent's array form, one {name: value} per header, so repeated
 ' Set-Cookie lines survive.
-function httpGet(url as String, withCookies = true as Boolean) as Object
-    return httpRequest(url, invalid, withCookies)
+function httpGet(url as String, withCookies = true as Boolean, timeoutMs = 20000 as Integer) as Object
+    return httpRequest(url, invalid, withCookies, timeoutMs)
 end function
 
 ' Form POST (application/x-www-form-urlencoded), same headers and result as httpGet.
@@ -83,7 +88,7 @@ function httpPost(url as String, form as String) as Object
     return httpRequest(url, form, true)
 end function
 
-function httpRequest(url as String, form as Dynamic, withCookies as Boolean) as Object
+function httpRequest(url as String, form as Dynamic, withCookies as Boolean, timeoutMs = 20000 as Integer) as Object
     port = CreateObject("roMessagePort")
     x = CreateObject("roUrlTransfer")
     x.SetMessagePort(port)
@@ -111,7 +116,7 @@ function httpRequest(url as String, form as Dynamic, withCookies as Boolean) as 
         out.failure = "request not sent"
         return out
     end if
-    msg = wait(20000, port)
+    msg = wait(timeoutMs, port)
     if type(msg) = "roUrlEvent" then
         out.code = msg.GetResponseCode()
         out.body = msg.GetString()
