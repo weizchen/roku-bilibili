@@ -16,6 +16,14 @@ Watch Bilibili directly on a Roku TV. **The app runs entirely on the TV by itsel
 
 The interface is in Chinese, as is Bilibili.
 
+## Screenshots
+
+| Home | Video page |
+| --- | --- |
+| ![Home: popular](docs/screenshots/home.jpg) | ![Video page](docs/screenshots/video.jpg) |
+| **Search (pinyin suggestions)** | **Settings (theme, font, danmaku)** |
+| ![Search](docs/screenshots/search.jpg) | ![Settings](docs/screenshots/settings.jpg) |
+
 > **Unofficial project**, not affiliated with Bilibili (Shanghai Kuanyu Digital Technology Co., Ltd.) in any way; for personal and educational use only. It uses your own Bilibili account — please follow Bilibili's terms of service and don't use it commercially.
 
 ## Install
