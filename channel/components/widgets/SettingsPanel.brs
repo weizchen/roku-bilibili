@@ -62,12 +62,12 @@ end sub
 function valueIndex(row as Integer) as Integer
     if row = 0 then
         for i = 0 to m.themeList.Count() - 1
-            if m.themeList[i].key = m.global.theme.key then return i
+            if m.themeList[i].key = currentTheme().key then return i
         end for
         return 0
     else if row = 1 then
         for i = 0 to m.fontList.Count() - 1
-            if m.fontList[i].key = m.global.font.key then return i
+            if m.fontList[i].key = currentFont().key then return i
         end for
         return 0
     else if row = 2 then

@@ -147,3 +147,10 @@ bottom = top.transpose(Image.FLIP_TOP_BOTTOM)
 bottom.save(OUT / "scrim_bottom.png")
 print("ui chrome ->", OUT)
 
+
+# rounds the avatar on the 我的 account card: card colour (see card.9.png) with a hole
+S4 = 140 * 4
+mask = Image.new("RGBA", (S4, S4), (28, 28, 36, 255))
+ImageDraw.Draw(mask).ellipse([0, 0, S4 - 1, S4 - 1], fill=(0, 0, 0, 0))
+mask.resize((140, 140), Image.LANCZOS).save(OUT / "avatar_mask.png")
+print("avatar mask ->", OUT / "avatar_mask.png")

@@ -35,8 +35,12 @@ sub execute()
         res = opReport(p)
     else if op = "progress" then
         res = opProgress(p)
+    else if op = "me" then
+        res = opMe()
     else if op = "favfolders" then
         res = opFavFolders()
+    else if op = "favcovers" then
+        res = opFavCovers(p)
     else if op = "favlist" then
         res = opFavList(p)
     else if op = "historydelete" then
@@ -258,25 +262,78 @@ function opPlay(p as Object) as Object
     })
 end function
 
-' ---------- favourites ----------
+' ---------- 我的: account card and favourites ----------
 
-' The account's own folders (默认收藏夹 first), with how many videos each holds.
+' Name, avatar, level, membership and the follow / fan / coin counts.
+function opMe() as Object
+    r = biliApi(apiBase() + "/x/web-interface/nav", {})
+    if not r.ok then return fail(r.error)
+    d = r.data
+    lv = 0
+    if type(d.level_info) = "roAssociativeArray" then lv = intOf(d.level_info.current_level)
+    vip = ""
+    if type(d.vip_label) = "roAssociativeArray" then vip = strOf(d.vip_label.text)
+    if vip = "" and type(d.vip) = "roAssociativeArray" then
+        if type(d.vip.label) = "roAssociativeArray" then vip = strOf(d.vip.label.text)
+    end if
+    coins = 0# + 0
+    if not isNil(d.money) then coins = 0# + d.money
+    st = {}
+    s = biliApi(apiBase() + "/x/web-interface/nav/stat", {})
+    if s.ok and type(s.data) = "roAssociativeArray" then st = s.data
+    return okWith({
+        uname: fit(strOf(d.uname))
+        face: sized(strOf(d.face), 160, 160)
+        level: lv
+        vip: fit(vip)
+        coins: oneDecimalTrim(coins)
+        following: fmtCount(st.following)
+        follower: fmtCount(st.follower)
+    })
+end function
+
+function oneDecimalTrim(x as Double) as String
+    if x = Int(x) then return Int(x).ToStr()
+    return oneDecimal(x)
+end function
+
+' The account's own folders (默认收藏夹 first) with cover and size.
 function opFavFolders() as Object
     uid = strOf(loadCookies().dedeuserid)
     if uid = "" then return fail("未登录")
-    r = biliApi(apiBase() + "/x/v3/fav/folder/created/list-all", { up_mid: uid, type: 2 })
-    if not r.ok then return fail(r.error)
     out = []
-    if type(r.data) = "roAssociativeArray" then
+    page = 1
+    while page <= 5
+        r = biliApi(apiBase() + "/x/v3/fav/folder/created/list", { up_mid: uid, pn: page, ps: 50 })
+        if not r.ok then return fail(r.error)
+        if type(r.data) <> "roAssociativeArray" then exit while
         if type(r.data.list) = "roArray" then
             for each f in r.data.list
                 title = fit(strOf(f.title))
                 if title = "" then title = "未命名收藏夹"   ' an all-emoji name has nothing left to draw
-                out.Push({ id: strOf(f.id), title: title, count: intOf(f.media_count) })
+                out.Push({ id: strOf(f.id), title: title, count: intOf(f.media_count), cover: sized(strOf(f.cover), 480, 300) })
             end for
         end if
-    end if
+        if not boolOf(r.data.has_more) then exit while
+        page = page + 1
+    end while
     return okWith({ folders: out })
+end function
+
+' Most folders come back without a cover; use each one's newest video instead.
+' p.ids: folder ids -> { covers: { <id>: url } }
+function opFavCovers(p as Object) as Object
+    covers = {}
+    if type(p.ids) <> "roArray" then return okWith({ covers: covers })
+    for each id in p.ids
+        r = biliApi(apiBase() + "/x/v3/fav/resource/list", { media_id: strOf(id), pn: 1, ps: 1, order: "mtime", type: 0, tid: 0, platform: "web" })
+        if r.ok and type(r.data) = "roAssociativeArray" then
+            if type(r.data.medias) = "roArray" then
+                if r.data.medias.Count() > 0 then covers[strOf(id)] = sized(strOf(r.data.medias[0].cover), 480, 300)
+            end if
+        end if
+    end for
+    return okWith({ covers: covers })
 end function
 
 ' One page of a folder, newest favourite first; removed videos are skipped.

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- One favourite folder's videos, opened from 我的. folder = {id, title, count}. -->
+<component name="FavoriteScreen" extends="Group">
+  <interface>
+    <field id="folder" type="assocarray" onChange="onFolder" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="FavoriteScreen.brs" />
+  <children>
+    <Label id="heading" translation="[96,46]" width="1300" maxLines="1" color="0xFFFFFFFF" />
+    <Label id="sub" translation="[96,112]" color="0x8E8E9EFF" />
+    <MarkupGrid id="grid" translation="[90,170]" itemComponentName="VideoCard"
+                numColumns="4" numRows="3" itemSize="[414,352]" itemSpacing="[28,36]"
+                drawFocusFeedback="false" vertFocusAnimationStyle="fixedFocus" />
+    <Label id="message" translation="[160,470]" width="1600" horizAlign="center" wrap="true" color="0x8E8E9EFF" visible="false" />
+    <BusySpinner id="spinner" translation="[928,500]" />
+  </children>
+</component>

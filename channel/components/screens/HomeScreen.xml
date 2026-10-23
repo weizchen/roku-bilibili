@@ -22,6 +22,22 @@
     <BusySpinner id="spinner" translation="[928,500]" visible="false" />
     <LoginPanel id="login" visible="false" />
     <SettingsPanel id="settings" visible="false" />
+
+    <!-- 我的 when logged in: account card on top, favourite folders below -->
+    <Group id="meBox" visible="false">
+      <Poster uri="pkg:/images/card.9.png" translation="[90,140]" width="1740" height="200" />
+      <Poster id="avatar" translation="[130,170]" width="140" height="140" loadWidth="160" loadHeight="160"
+              loadDisplayMode="scaleToZoom" loadingBitmapUri="pkg:/images/placeholder.png" failedBitmapUri="pkg:/images/placeholder.png" />
+      <Poster uri="pkg:/images/avatar_mask.png" translation="[130,170]" width="140" height="140" />
+      <Label id="uname" translation="[310,172]" width="1000" maxLines="1" color="0xFFFFFFFF" />
+      <Label id="badges" translation="[310,238]" width="1000" maxLines="1" />
+      <Label id="meStats" translation="[310,282]" width="1000" maxLines="1" color="0x8E8E9EFF" />
+      <Label id="meHint" translation="[1290,282]" width="500" horizAlign="right" color="0x6E6E7EFF" />
+      <Label id="favTitle" translation="[96,372]" color="0xFFFFFFFF" />
+      <MarkupGrid id="folders" translation="[90,430]" itemComponentName="VideoCard"
+                  numColumns="4" numRows="2" itemSize="[414,352]" itemSpacing="[28,36]"
+                  drawFocusFeedback="false" vertFocusAnimationStyle="fixedFocus" />
+    </Group>
     <ActionMenu id="menu" visible="false" />
   </children>
 </component>

@@ -95,6 +95,10 @@ sub onRoute()
         s.request = a
     else if action = "search" then
         push(CreateObject("roSGNode", "SearchScreen"))
+    else if action = "favorites" then
+        s = CreateObject("roSGNode", "FavoriteScreen")
+        push(s)
+        s.folder = { id: a.id, title: a.title, count: a.count }
     else if action = "toast" then
         showToast(strOf(a.text))
     else if action = "report" then

@@ -19,7 +19,7 @@ end function
 
 function cjkFont(size as Integer) as Object
     f = CreateObject("roSGNode", "Font")
-    f.uri = m.global.font.uri
+    f.uri = currentFont().uri
     f.size = size
     return f
 end function
@@ -46,18 +46,38 @@ function themeByKey(key as String) as Object
     return themes()[0]
 end function
 
+' The global theme/font are set by MainScene; fall back to the defaults when they
+' are not there (a component built while the channel is being torn down).
+function currentTheme() as Object
+    t = invalid
+    if m.global <> invalid then t = m.global.theme
+    if type(t) = "roAssociativeArray" then
+        if not isNil(t.key) then return t
+    end if
+    return themes()[0]
+end function
+
+function currentFont() as Object
+    f = invalid
+    if m.global <> invalid then f = m.global.font
+    if type(f) = "roAssociativeArray" then
+        if not isNil(f.uri) then return f
+    end if
+    return fonts()[0]
+end function
+
 function accent() as String
-    return m.global.theme.accent
+    return currentTheme().accent
 end function
 
 function onAccent() as String
-    return m.global.theme.onAccent
+    return currentTheme().onAccent
 end function
 
 ' "pill" -> pkg:/images/pill_yellow.9.png; spinner art is not a 9-patch
 function themed(name as String) as String
-    if name = "spinner" then return "pkg:/images/spinner_" + m.global.theme.key + ".png"
-    return "pkg:/images/" + name + "_" + m.global.theme.key + ".9.png"
+    if name = "spinner" then return "pkg:/images/spinner_" + currentTheme().key + ".png"
+    return "pkg:/images/" + name + "_" + currentTheme().key + ".9.png"
 end function
 
 function isNil(v as Dynamic) as Boolean
