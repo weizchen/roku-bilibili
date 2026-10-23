@@ -7,7 +7,7 @@ function fit(s as String) as String
     if n = 0 then return s
     if m.cov = invalid then
         m.cov = CreateObject("roByteArray")
-        if not m.cov.ReadFile("pkg:/fonts/cjk.cov") then m.cov = CreateObject("roByteArray")
+        if not m.cov.ReadFile("pkg:/fonts/" + m.global.font.key + ".cov") then m.cov = CreateObject("roByteArray")
     end if
     cov = m.cov
     if cov.Count() = 0 then return s

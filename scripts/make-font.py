@@ -1,25 +1,24 @@
-"""Subset a CJK font into channel/fonts/cjk.otf -- Roku's system font has no CJK glyphs.
+"""Subset a CJK font for the channel -- Roku's system font has no CJK glyphs.
 
-    tools/.venv/bin/python scripts/make-font.py [path/to/font.otf]
+    tools/.venv/bin/python scripts/make-font.py <font.otf|ttf|ttc> <key>
+
+Writes channel/fonts/<key>.otf (or .ttf for TrueType sources) plus <key>.cov.
+The keys the app knows are listed in fonts() in channel/components/common/utils.brs
+(song / hei / kai). Variable fonts are pinned to the regular weight first.
 
 Keeps ASCII/Latin-1, punctuation, arrows/shapes, kana, full-width forms, all
-GB2312 hanzi and Big5 level-1 traditional hanzi. Works with any OFL CJK font
-(Source Han / Noto Sans CJK). The subset is renamed, as the OFL asks of
-modified versions, and keeps the original copyright and licence records.
+GB2312 hanzi and Big5 level-1 traditional hanzi. Works with any OFL CJK font.
+The subset is renamed ("Gouli <Key>"), as the OFL asks of modified versions
+whose originals reserve their names, and keeps the copyright and licence records.
 """
-import os
 import sys
 from pathlib import Path
 
 from fontTools import subset
 from fontTools.ttLib import TTFont, TTCollection
+from fontTools.varLib import instancer
 
-ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "channel" / "fonts" / "cjk.otf"
-# one bit per BMP code point (LSB first): which characters the font can draw.
-# The channel drops the rest (emoji...) so Roku does not paint boxes.
-COV = ROOT / "channel" / "fonts" / "cjk.cov"
-DEFAULT = os.environ.get("CJK_FONT", "")
+FONTS = Path(__file__).resolve().parent.parent / "channel" / "fonts"
 
 
 def charset() -> set[int]:
@@ -51,10 +50,12 @@ def load(path: str) -> TTFont:
 
 
 def main():
-    src = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
-    if not src:
-        sys.exit("usage: make-font.py <font.otf|ttf|ttc>  (or set CJK_FONT)")
+    if len(sys.argv) != 3:
+        sys.exit("usage: make-font.py <font.otf|ttf|ttc> <key>")
+    src, key = sys.argv[1], sys.argv[2]
     font = load(src)
+    if "fvar" in font:
+        font = instancer.instantiateVariableFont(font, {"wght": 400})
     opts = subset.Options()
     opts.layout_features = []
     opts.name_IDs = ["*"]
@@ -67,24 +68,28 @@ def main():
     sub.subset(font)
 
     # OFL: a modified font may not keep the Reserved Font Name
+    family = f"Gouli {key.capitalize()}"
+    ps = family.replace(" ", "-")
     for rec in font["name"].names:
         if rec.nameID in (1, 3, 4, 6, 16, 17, 21, 22):
-            new = {1: "BiliTV CJK", 3: "BiliTV CJK subset", 4: "BiliTV CJK",
-                   6: "BiliTV-CJK", 16: "BiliTV CJK", 17: "Regular",
-                   21: "BiliTV CJK", 22: "Regular"}[rec.nameID]
-            rec.string = new
+            rec.string = {1: family, 3: f"{family} subset", 4: family, 6: ps,
+                          16: family, 17: "Regular", 21: family, 22: "Regular"}[rec.nameID]
     if "CFF " in font:
-        cff = font["CFF "].cff
-        cff.fontNames = ["BiliTV-CJK"]
+        font["CFF "].cff.fontNames = [ps]
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    font.save(OUT)
+    FONTS.mkdir(parents=True, exist_ok=True)
+    out = FONTS / f"{key}.{'otf' if 'CFF ' in font else 'ttf'}"
+    for stale in FONTS.glob(f"{key}.*"):
+        stale.unlink()
+    font.save(out)
+    # one bit per BMP code point (LSB first): which characters the font can draw.
+    # The channel drops the rest (emoji...) so Roku does not paint boxes.
     cov = bytearray(65536 // 8)
     for cp in font.getBestCmap():
         if cp < 65536:
             cov[cp // 8] |= 1 << (cp % 8)
-    COV.write_bytes(bytes(cov))
-    print(f"{OUT}  {OUT.stat().st_size / 1e6:.2f} MB  {len(font.getBestCmap())} chars")
+    (FONTS / f"{key}.cov").write_bytes(bytes(cov))
+    print(f"{out}  {out.stat().st_size / 1e6:.2f} MB  {len(font.getBestCmap())} chars")
 
 
 if __name__ == "__main__":

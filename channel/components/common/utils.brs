@@ -1,9 +1,25 @@
 ' Helpers shared by every component (included with a <script> tag).
 
+' Roku's system font has no CJK glyphs, so every label uses one of these bundled
+' subsets (built by scripts/make-font.py; the first is the default).
+function fonts() as Object
+    return [
+        { key: "kai", name: "楷体", uri: "pkg:/fonts/kai.ttf" }
+        { key: "hei", name: "黑体", uri: "pkg:/fonts/hei.ttf" }
+        { key: "song", name: "宋体", uri: "pkg:/fonts/song.otf" }
+    ]
+end function
+
+function fontByKey(key as String) as Object
+    for each f in fonts()
+        if f.key = key then return f
+    end for
+    return fonts()[0]
+end function
+
 function cjkFont(size as Integer) as Object
-    ' Roku's system font has no CJK glyphs, so every label uses the bundled subset.
     f = CreateObject("roSGNode", "Font")
-    f.uri = "pkg:/fonts/cjk.otf"
+    f.uri = m.global.font.uri
     f.size = size
     return f
 end function

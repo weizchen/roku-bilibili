@@ -2,7 +2,7 @@
 
 在 Roku 电视上看 B 站的客户端。**全部运行在电视上**，不需要电脑开着；电脑只在安装和更新时用一下。
 
-功能：首页（推荐 / 热门 / 排行 / 历史，带发布时间）、搜索（拼音联想）、详情页（分 P、相关推荐、断点续播）、播放器、弹幕（开关、不透明度）、扫码登录（登录后 1080P）、观看进度与 B 站账号双向同步、在电视上删除观看历史、主题色可选（黄 / 粉 / 蓝 / 绿 / 紫）。
+功能：首页（推荐 / 热门 / 排行 / 历史，带发布时间）、搜索（拼音联想）、详情页（分 P、相关推荐、断点续播）、播放器、弹幕（开关、不透明度）、扫码登录（登录后 1080P）、观看进度与 B 站账号双向同步、在电视上删除观看历史、主题色可选（黄 / 粉 / 蓝 / 绿 / 紫）、字体可选（楷体 / 黑体 / 宋体）。
 
 > **非官方项目**，与哔哩哔哩（上海宽娱数码科技有限公司）没有任何关系。只调用 B 站网页版本来就开放的接口，用你自己的账号登录，仅供个人学习和自用。请遵守 B 站用户协议，不要用于商业用途。
 
@@ -24,7 +24,7 @@ scripts/deploy.sh
 
 | 位置 | 操作 |
 | --- | --- |
-| 首页标签栏 | 左右切换，下进入视频，OK 在「推荐」上换一批；「设置」里改主题色和弹幕默认值 |
+| 首页标签栏 | 左右切换，下进入视频，OK 在「推荐」上换一批；「设置」里改主题色、字体和弹幕默认值 |
 | 首页视频 | 上 / 返回 回到标签栏，`*` 刷新；往下翻会自动加载更多（历史也是） |
 | 历史 | 在视频上按 `*`：从观看历史中删除，或清空全部（会再确认一次，默认选「取消」） |
 | 详情页 | 下 = 相关推荐，右 = 选集 |
@@ -54,7 +54,13 @@ scripts/cast.sh "https://www.bilibili.com/video/BV1GJ411x7h7"
 - **登录**：扫码确认后，B 站只通过响应头 `Set-Cookie` 下发 `SESSDATA` 等，`roUrlEvent.GetResponseHeadersArray()` 能拿到重复的 `Set-Cookie`。
 - **登录二维码**：`bili/qr.brs` 是电视上的二维码生成器。不能用网上的二维码服务——登录链接里带着 key，谁拿到谁就能拿到登录态。
 - **弹幕**：`widgets/DanmakuLayer` 用对象池 + SceneGraph 动画滚动（渲染线程负责移动），按视频时间放出、分轨道防重叠。
-- **中文字体**：Roku 系统字体没有中文，频道带了一个约 1 万字的子集字体（`channel/fonts/cjk.otf`），旁边的 `cjk.cov` 是字形覆盖表，标题里字体画不出的字符（emoji 等）会被去掉，免得显示成方块。字体是 Adobe 思源宋体的子集，按 SIL Open Font License 1.1 再分发，许可证见 [`channel/fonts/OFL.txt`](channel/fonts/OFL.txt)；因为改动过（子集化），按许可证要求改名为 "BiliTV CJK"。
+- **中文字体**：Roku 系统字体没有中文，频道自带三种约 1 万字的子集字体，在「设置」里切换（换字体后首页会重建）。每个字体旁边的 `.cov` 是字形覆盖表，标题里字体画不出的字符（emoji 等）会被去掉，免得显示成方块。三种字体都按 SIL Open Font License 1.1 再分发；原字体保留了字体名，所以子集化后按许可证要求改名为 "Gouli Kai / Hei / Song"：
+
+  | 设置里的名字 | 文件 | 原字体 | 许可证 |
+  | --- | --- | --- | --- |
+  | 楷体（默认） | `channel/fonts/kai.ttf` | 霞鹜文楷 LXGW WenKai | [`OFL-LXGWWenKai.txt`](channel/fonts/OFL-LXGWWenKai.txt) |
+  | 黑体 | `channel/fonts/hei.ttf` | Noto Sans SC（常规字重） | [`OFL-NotoSansSC.txt`](channel/fonts/OFL-NotoSansSC.txt) |
+  | 宋体 | `channel/fonts/song.otf` | 思源宋体 Source Han Serif | [`OFL-SourceHanSerif.txt`](channel/fonts/OFL-SourceHanSerif.txt) |
 
 ## 主题色和图标
 
@@ -72,7 +78,7 @@ python3 scripts/remote.py Down Select 2 Back   # 用 ECP 模拟遥控器
 
 ```bash
 python3 -m venv tools/.venv && tools/.venv/bin/pip install -r tools/requirements.txt
-tools/.venv/bin/python scripts/make-font.py path/to/SourceHanSans-or-NotoSansSC.otf
+tools/.venv/bin/python scripts/make-font.py path/to/LXGWWenKai-Regular.ttf kai   # 第二个参数是 kai / hei / song
 tools/.venv/bin/python scripts/make-art.py
 ```
 

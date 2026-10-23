@@ -100,6 +100,12 @@ sub paintTabs()
     end for
 end sub
 
+sub onStartTab()
+    for i = 0 to m.tabsDef.Count() - 1
+        if m.tabsDef[i].key = m.top.startTab then selectTab(i)
+    end for
+end sub
+
 function currentKey() as String
     return m.tabsDef[m.tabIndex].key
 end function
@@ -121,7 +127,7 @@ sub selectTab(i as Integer)
         end if
         return
     else if key = "settings" then
-        showMessage("按 OK 打开设置（主题色、弹幕）")
+        showMessage("按 OK 打开设置（主题色、字体、弹幕）")
         return
     end if
     ' history moves as you watch, so it is fetched fresh every time

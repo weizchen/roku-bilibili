@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!-- Home: tab bar (推荐 热门 排行 历史 搜索 我的) over a four-column video grid. -->
 <component name="HomeScreen" extends="Group">
+  <interface>
+    <field id="startTab" type="string" onChange="onStartTab" />
+  </interface>
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
   <script type="text/brightscript" uri="HomeScreen.brs" />
   <children>

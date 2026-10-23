@@ -2,6 +2,9 @@ sub init()
     m.top.backgroundColor = "0x0F0F14FF"
     m.top.backgroundUri = ""
     m.global.theme = themeByKey(loadSetting("theme", "yellow"))
+    m.global.font = fontByKey(loadSetting("font", "kai"))
+    m.global.observeField("font", "onFontChanged")
+    m.fontChanged = false
     m.stack = []
     m.reports = []   ' history reports in flight; kept here so they outlive the player
     m.container = m.top.findNode("stack")
@@ -39,9 +42,29 @@ sub pop()
     if m.stack.Count() <= 1 then return
     screen = m.stack.Pop()
     m.container.removeChild(screen)
+    if m.fontChanged and m.stack.Count() = 1 then
+        rebuildHome()
+        return
+    end if
     top = m.stack.Peek()
     top.visible = true
     top.setFocus(true)
+end sub
+
+' Labels keep the Font node they were built with, so a new font means a new home
+' screen (everything else is created afresh when opened).
+sub onFontChanged()
+    m.fontChanged = true
+    m.toastText.font = cjkFont(30)
+end sub
+
+sub rebuildHome()
+    m.fontChanged = false
+    old = m.stack.Pop()
+    m.container.removeChild(old)
+    home = CreateObject("roSGNode", "HomeScreen")
+    push(home)
+    home.startTab = "settings"
 end sub
 
 sub onRoute()

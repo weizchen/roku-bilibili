@@ -5,16 +5,17 @@ sub init()
     for each t in m.themeList
         names.Push(t.name)
     end for
+    m.fontList = fonts()
+    fontNames = []
+    for each f in m.fontList
+        fontNames.Push(f.name)
+    end for
     m.rowsDef = [
         { name: "主题色", labels: names }
+        { name: "字体", labels: fontNames }
         { name: "弹幕默认", labels: ["关", "开"] }
         { name: "弹幕不透明度", labels: ["20%", "40%", "60%", "80%", "100%"] }
     ]
-    m.top.findNode("heading").font = cjkFont(52)
-    m.top.findNode("hint").font = cjkFont(26)
-    m.top.findNode("previewBrand").font = cjkFont(48)
-    m.top.findNode("previewPillText").font = cjkFont(32)
-    m.top.findNode("previewText").font = cjkFont(26)
 
     m.rows = []
     group = m.top.findNode("rows")
@@ -25,7 +26,6 @@ sub init()
         chip.width = 960
         chip.height = 88
         name = g.createChild("Label")
-        name.font = cjkFont(34)
         name.text = m.rowsDef[i].name
         name.translation = [36, 0]
         name.height = 88
@@ -36,7 +36,6 @@ sub init()
         swatch.translation = [600, 29]
         swatch.visible = (i = 0)
         value = g.createChild("Label")
-        value.font = cjkFont(34)
         value.translation = [640, 0]
         value.width = 290
         value.height = 88
@@ -45,7 +44,20 @@ sub init()
         m.rows.Push({ chip: chip, name: name, swatch: swatch, value: value })
     end for
     m.sel = 0
+    applyFonts()
     paint()
+end sub
+
+sub applyFonts()
+    m.top.findNode("heading").font = cjkFont(52)
+    m.top.findNode("hint").font = cjkFont(26)
+    m.top.findNode("previewBrand").font = cjkFont(48)
+    m.top.findNode("previewPillText").font = cjkFont(32)
+    m.top.findNode("previewText").font = cjkFont(26)
+    for each r in m.rows
+        r.name.font = cjkFont(34)
+        r.value.font = cjkFont(34)
+    end for
 end sub
 
 function valueIndex(row as Integer) as Integer
@@ -55,6 +67,11 @@ function valueIndex(row as Integer) as Integer
         end for
         return 0
     else if row = 1 then
+        for i = 0 to m.fontList.Count() - 1
+            if m.fontList[i].key = m.global.font.key then return i
+        end for
+        return 0
+    else if row = 2 then
         if loadSetting("dm_on", "1") = "1" then return 1
         return 0
     end if
@@ -79,6 +96,11 @@ sub change(delta as Integer, wrap as Boolean)
         m.global.theme = m.themeList[i]
         saveSetting("theme", m.themeList[i].key)
     else if m.sel = 1 then
+        ' the rest of the app picks the new font up as screens are rebuilt
+        m.global.font = m.fontList[i]
+        saveSetting("font", m.fontList[i].key)
+        applyFonts()
+    else if m.sel = 2 then
         if i = 1 then
             saveSetting("dm_on", "1")
         else
