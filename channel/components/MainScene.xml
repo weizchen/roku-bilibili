@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Root scene: a stack of screens plus a toast. Screens navigate by setting `nav`. -->
+<component name="MainScene" extends="Scene">
+  <interface>
+    <field id="nav" type="assocarray" alwaysNotify="true" onChange="onRoute" />
+    <field id="deeplink" type="assocarray" alwaysNotify="true" onChange="onDeeplink" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="MainScene.brs" />
+  <children>
+    <Rectangle width="1920" height="1080" color="0x0F0F14FF" />
+    <Group id="stack" />
+    <Group id="toast" visible="false" translation="[0,940]">
+      <Poster id="toastBg" uri="pkg:/images/card.9.png" height="72" />
+      <Label id="toastText" height="72" vertAlign="center" horizAlign="center" color="0xF0F0F5FF" />
+    </Group>
+    <Timer id="toastTimer" duration="3.5" />
+  </children>
+</component>

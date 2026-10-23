@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- One video tile for MarkupGrid / RowList. Lays itself out from the width the list hands it. -->
+<component name="VideoCard" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onContent" />
+    <field id="width" type="float" onChange="layout" />
+    <field id="height" type="float" />
+    <field id="focusPercent" type="float" onChange="onFocus" />
+    <field id="itemHasFocus" type="boolean" onChange="onFocus" />
+    <field id="gridHasFocus" type="boolean" onChange="onFocus" />
+    <field id="rowListHasFocus" type="boolean" onChange="onFocus" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="VideoCard.brs" />
+  <children>
+    <Poster id="ring" uri="pkg:/images/focus.9.png" opacity="0" />
+    <Poster id="frame" uri="pkg:/images/card.9.png" />
+    <Poster id="poster" loadDisplayMode="scaleToZoom"
+            loadingBitmapUri="pkg:/images/placeholder.png" failedBitmapUri="pkg:/images/placeholder.png" />
+    <Poster id="scrim" uri="pkg:/images/scrim_bottom.png" visible="false" />
+    <Label id="stats" color="0xFFFFFFFF" visible="false" />
+    <Rectangle id="progressBg" color="0xFFFFFF40" visible="false" />
+    <Rectangle id="progressBar" color="0xFB7299FF" visible="false" />
+    <Poster id="badge" uri="pkg:/images/badge.9.png" visible="false" />
+    <Label id="duration" color="0xFFFFFFFF" font="font:SmallestSystemFont" />
+    <Label id="title" color="0xD2D2DCFF" wrap="true" maxLines="2" lineSpacing="2" />
+    <Label id="meta" color="0x8E8E9EFF" maxLines="1" />
+  </children>
+</component>

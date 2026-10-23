@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Centred choice dialog in the CJK font (Roku's own dialogs would draw boxes for Chinese).
+     Set title / message / options, then watch `chosen` (index) and `closed`. -->
+<component name="ActionMenu" extends="Group">
+  <interface>
+    <field id="title" type="string" onChange="layout" />
+    <field id="message" type="string" onChange="layout" />
+    <field id="options" type="array" onChange="onOptions" />
+    <field id="chosen" type="integer" alwaysNotify="true" />
+    <field id="closed" type="boolean" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="ActionMenu.brs" />
+  <children>
+    <Rectangle width="1920" height="1080" color="0x000000B8" />
+    <Poster id="panel" uri="pkg:/images/card.9.png" translation="[560,300]" width="800" />
+    <Label id="titleLabel" translation="[610,340]" width="700" maxLines="2" wrap="true" color="0xFFFFFFFF" />
+    <Label id="messageLabel" translation="[610,420]" width="700" wrap="true" color="0xB4B4C0FF" />
+    <LabelList id="list" translation="[600,460]" itemSize="[720,66]" numRows="5" itemSpacing="[0,4]"
+               color="0xD2D2DCFF" focusedColor="0xFFFFFFFF"
+               focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png" />
+  </children>
+</component>

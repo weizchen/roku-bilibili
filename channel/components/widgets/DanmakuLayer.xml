@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Danmaku over the video. Bind `video`, set `cid`; toggle with `enabled`, fade with `opacity`. -->
+<component name="DanmakuLayer" extends="Group">
+  <interface>
+    <field id="video" type="node" onChange="onVideo" />
+    <field id="cid" type="string" onChange="onCid" />
+    <field id="enabled" type="boolean" value="true" onChange="onEnabled" />
+    <field id="count" type="integer" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="DanmakuLayer.brs" />
+  <children>
+    <Group id="pool" />
+    <Timer id="tick" duration="0.2" repeat="true" />
+  </children>
+</component>

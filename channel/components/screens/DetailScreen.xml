@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Video page: backdrop, title/meta/description, play buttons, part list, related row. -->
+<component name="DetailScreen" extends="Group">
+  <interface>
+    <field id="bvid" type="string" onChange="load" />
+    <field id="autoplay" type="boolean" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="DetailScreen.brs" />
+  <children>
+    <Poster id="backdrop" width="1920" height="1080" loadDisplayMode="scaleToZoom"
+            loadWidth="640" loadHeight="360" opacity="0.5" />
+    <Poster uri="pkg:/images/scrim_left.png" width="1920" height="1080" />
+    <Poster uri="pkg:/images/scrim_bottom.png" width="1920" height="520" translation="[0,560]" />
+
+    <Group id="info" visible="false">
+      <Label id="title" translation="[96,86]" width="1060" wrap="true" maxLines="2" lineSpacing="6" color="0xFFFFFFFF" />
+      <Label id="meta" translation="[96,236]" width="1060" color="0xFB7299FF" />
+      <Label id="stats" translation="[96,282]" width="1060" color="0xB4B4C0FF" />
+      <Label id="desc" translation="[96,296]" width="1040" wrap="true" maxLines="5" lineSpacing="6" color="0xB4B4C0FF" />
+      <ButtonGroup id="buttons" translation="[96,520]" layoutDirection="horiz" itemSpacings="[24]"
+                   minWidth="260" buttonHeight="76"
+                   focusBitmapUri="pkg:/images/pill.9.png" focusFootprintBitmapUri="pkg:/images/pill_dim.9.png"
+                   iconUri="" focusedIconUri=""
+                   textColor="0xE6E6EBFF" focusedTextColor="0xFFFFFFFF" />
+
+      <Poster id="cover" translation="[1236,96]" width="588" height="331" loadWidth="588" loadHeight="331"
+              loadDisplayMode="scaleToZoom" loadingBitmapUri="pkg:/images/placeholder.png" />
+      <Group id="partsBox" translation="[1236,86]" visible="false">
+        <Poster uri="pkg:/images/card.9.png" translation="[-20,-14]" width="628" height="510" opacity="0.85" />
+        <Label id="partsTitle" color="0xFFFFFFFF" />
+        <LabelList id="parts" translation="[0,58]" itemSize="[588,58]" numRows="7" itemSpacing="[0,4]"
+                   color="0xB4B4C0FF" focusedColor="0xFFFFFFFF"
+                   focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png"
+                   vertFocusAnimationStyle="floatingFocus" />
+      </Group>
+
+      <RowList id="related" translation="[90,650]" itemComponentName="VideoCard"
+               numRows="1" itemSize="[1740,360]" rowItemSize="[[330,300]]" rowItemSpacing="[[26,0]]"
+               showRowLabel="[true]" rowLabelOffset="[[4,16]]" rowLabelColor="0xFFFFFFFF"
+               drawFocusFeedback="false" rowFocusAnimationStyle="floatingFocus" />
+    </Group>
+    <BusySpinner id="spinner" translation="[928,500]" />
+    <Label id="message" translation="[160,480]" width="1600" horizAlign="center" wrap="true" color="0x8E8E9EFF" visible="false" />
+  </children>
+</component>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Loopback HTTP server for DASH manifests: Roku only plays an MPD it can fetch
+     over HTTP, so the channel serves m.global.mpd itself on 127.0.0.1. -->
+<component name="ManifestServer" extends="Task">
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="ManifestServer.brs" />
+</component>

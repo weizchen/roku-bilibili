@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Search: keyboard + suggestions on the left (pinyin works: "ys" -> 原神), results on the right. -->
+<component name="SearchScreen" extends="Group">
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="SearchScreen.brs" />
+  <children>
+    <Label id="heading" translation="[96,44]" text="搜索" color="0xFFFFFFFF" />
+    <Label id="hint" translation="[96,104]" width="560" text="可以输入拼音首字母，比如 ys → 原神" color="0x8E8E9EFF" />
+    <Group translation="[86,150]" scale="[0.8,0.8]">
+      <MiniKeyboard id="kb" />
+    </Group>
+    <Label id="sugTitle" translation="[96,712]" text="热门搜索" color="0xFB7299FF" />
+    <LabelList id="sug" translation="[84,758]" itemSize="[560,52]" numRows="6" itemSpacing="[0,0]"
+               color="0xD2D2DCFF" focusedColor="0xFFFFFFFF"
+               focusBitmapUri="pkg:/images/chip.9.png" focusFootprintBitmapUri="pkg:/images/clear.png"
+               vertFocusAnimationStyle="floatingFocus" />
+    <Label id="resultTitle" translation="[720,44]" width="1110" maxLines="1" color="0xFFFFFFFF" />
+    <MarkupGrid id="grid" translation="[720,120]" itemComponentName="VideoCard"
+                numColumns="3" numRows="3" itemSize="[350,300]" itemSpacing="[30,34]"
+                drawFocusFeedback="false" vertFocusAnimationStyle="fixedFocus" />
+    <Label id="message" translation="[720,460]" width="1110" horizAlign="center" wrap="true" color="0x8E8E9EFF" visible="false" />
+    <BusySpinner id="spinner" translation="[1243,460]" visible="false" />
+    <Timer id="debounce" duration="0.6" />
+  </children>
+</component>

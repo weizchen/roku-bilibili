@@ -1,0 +1,10 @@
+.env.local
+.DS_Store
+tools/.venv/
+__pycache__/
+build/
+*.zip
+# never publish other people's app packages
+tvshowapp/
+*.apk
+*.apk.bak
