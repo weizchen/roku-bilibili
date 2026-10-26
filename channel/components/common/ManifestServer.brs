@@ -44,17 +44,20 @@ sub serve()
                 if c <> invalid then
                     res = respond(requestPath(c.ReceiveStr(8192)))
                     if res = invalid then res = { status: "404 Not Found", mime: "text/plain", text: "" }
-                    if res.bytes = invalid then
+                    if res.bytes <> invalid then res.pieces = { pieces: [{ b: res.bytes, s: 0, n: res.bytes.Count() }], length: res.bytes.Count() }
+                    if res.pieces = invalid then
                         length = Len(res.text)
                     else
-                        length = res.bytes.Count()
+                        length = res.pieces.length
                     end if
                     head = "HTTP/1.1 " + res.status + crlf + "Content-Type: " + res.mime + crlf + "Content-Length: " + length.ToStr() + crlf + "Cache-Control: no-store" + crlf + "Connection: close" + crlf + crlf
-                    if res.bytes = invalid then
+                    if res.pieces = invalid then
                         sendAll(c, head + res.text)
                     else
                         sendAll(c, head)
-                        sendBytes(c, res.bytes)
+                        for each piece in res.pieces.pieces
+                            sendBytes(c, piece.b, piece.s, piece.n)
+                        end for
                     end if
                     c.Close()
                     clients.Delete(key)
@@ -83,82 +86,141 @@ function respond(path as String) as Dynamic
     live = "/" + m.global.liveId + "/"
     if m.global.liveId = "" or Left(path, Len(live)) <> live then return invalid
     rest = Mid(path, Len(live) + 1)
-    if rest = "a.m3u8" then
-        text = audioPlaylist()
+    if rest = "a.m3u8" or rest = "v.m3u8" then
+        text = renditionPlaylist(Left(rest, 1) = "v")
         if text = "" then return invalid
         return { status: "200 OK", mime: "application/vnd.apple.mpegurl", text: text }
-    else if Left(rest, 2) = "i/" then
-        init = audioInit(Mid(rest, 3))
+    else if Left(rest, 2) = "i/" or Left(rest, 3) = "vi/" then
+        if Left(rest, 2) = "i/" then
+            init = trackInit(Mid(rest, 3), "soun")
+        else
+            init = trackInit(Mid(rest, 4), "vide")
+        end if
         if init = invalid then return invalid
         return { status: "200 OK", mime: "video/mp4", bytes: init.bytes }
-    else if Left(rest, 2) = "s/" then
-        seg = audioSegment(Mid(rest, 3))
+    else if Left(rest, 2) = "s/" or Left(rest, 3) = "vs/" then
+        if Left(rest, 2) = "s/" then
+            seg = trackSegment(Mid(rest, 3), "soun")
+        else
+            seg = trackSegment(Mid(rest, 4), "vide")
+        end if
         if seg = invalid then return invalid
-        return { status: "200 OK", mime: "video/mp4", bytes: seg }
+        return { status: "200 OK", mime: "video/mp4", pieces: seg }
     end if
     return invalid
 end function
 
-' ---------- live audio rendition ----------
+' ---------- live renditions ----------
 
-' The upstream media playlist, pointed at our audio-only init and segments.
-function audioPlaylist() as String
-    r = liveFetch(m.global.liveSrc, m.global.liveHeaders, "", 5000)
-    if r.code <> 200 then return ""
+' The upstream media playlist pointed at our own init and segments, cut to
+' sound or (when the stream lists its sound track first) to picture.
+function renditionPlaylist(video as Boolean) as String
+    body = upstreamPlaylist()
+    if body = "" then return ""
     q = Chr(34)
     lf = Chr(10)
     out = ""
-    for each line in r.body.Split(lf)
+    for each line in body.Split(lf)
         line = line.Trim()
         if line = "" or Left(line, 13) = "#EXT-BILI-AUX" then
             ' Bilibili's own tags; Roku has no use for them
         else if Left(line, 8) = "#EXTINF:" then
             out = out + Left(line, Instr(1, line, ",")) + lf
         else if Left(line, 10) = "#EXT-X-MAP" then
-            out = out + "#EXT-X-MAP:URI=" + q + "i/" + liveMapOf(line) + q + lf
+            if video then
+                out = out + "#EXT-X-MAP:URI=" + q + "vi/" + liveMapOf(line) + q + lf
+            else
+                out = out + "#EXT-X-MAP:URI=" + q + "i/" + liveMapOf(line) + q + lf
+            end if
         else if Left(line, 1) = "#" then
             out = out + line + lf
-        else if Left(line, 4) = "http" then
-            out = out + "s/" + Mid(line, Len(liveBaseOf(line)) + 1) + lf
         else
-            out = out + "s/" + line + lf
+            if Left(line, 4) = "http" then line = Mid(line, Len(liveBaseOf(line)) + 1)
+            if video then
+                out = out + "vs/" + line + lf
+            else
+                out = out + "s/" + line + lf
+            end if
         end if
     end for
     return out
 end function
 
-' { bytes, track } for the named init segment, cached until the stream changes it.
-function audioInit(name as String) as Dynamic
+' { bytes, track } for the named init segment cut to one kind of track,
+' cached until the stream changes its init.
+function trackInit(name as String, kind as String) as Dynamic
+    if m.inits = invalid then m.inits = {}
     key = m.global.liveId + "/" + name
-    if m.audioInit <> invalid and m.audioInit.key = key then return m.audioInit
+    cached = m.inits[kind]
+    if cached <> invalid then
+        if cached.key = key then return cached
+    end if
     raw = liveFetchBytes(m.global.liveBase + name, m.global.liveHeaders, 6000, "tmp:/live_srv_init.m4s")
     if raw = invalid then return invalid
-    cut = mp4AudioInit(raw)
+    cut = mp4TrackInit(raw, kind)
     if cut.track = 0 then return invalid
     cut.key = key
-    m.audioInit = cut
+    m.inits[kind] = cut
     return cut
 end function
 
-function audioSegment(name as String) as Dynamic
-    if m.audioInit = invalid or Left(m.audioInit.key, Len(m.global.liveId) + 1) <> m.global.liveId + "/" then
-        ' a segment asked for before its init: find the init through the playlist
-        r = liveFetch(m.global.liveSrc, m.global.liveHeaders, "", 5000)
-        if r.code <> 200 or audioInit(liveMapOf(r.body)) = invalid then return invalid
+' Each rendition reloads the playlist about once a second and the CDN takes
+' ~0.4s to answer; one fetch every 1.5s is plenty for an ~8 second window.
+function upstreamPlaylist() as String
+    if m.playlistClock = invalid then
+        m.playlistClock = CreateObject("roTimespan")
+        m.playlistSrc = ""
     end if
-    raw = liveFetchBytes(m.global.liveBase + name, m.global.liveHeaders, 8000, "tmp:/live_srv_seg.m4s")
-    if raw = invalid then return invalid
-    return mp4TrackSegment(raw, m.audioInit.track)
+    if m.playlistSrc = m.global.liveSrc and m.playlistClock.TotalMilliseconds() < 1500 then return m.playlistBody
+    r = liveFetch(m.global.liveSrc, m.global.liveHeaders, "", 5000)
+    if r.code <> 200 then return ""
+    m.playlistSrc = m.global.liveSrc
+    m.playlistBody = r.body
+    m.playlistClock.Mark()
+    return r.body
 end function
 
-sub sendBytes(c as Object, body as Object)
+' The named segment cut to one kind of track, as pieces to send.
+function trackSegment(name as String, kind as String) as Dynamic
+    init = invalid
+    if m.inits <> invalid then init = m.inits[kind]
+    if init <> invalid then
+        if Left(init.key, Len(m.global.liveId) + 1) <> m.global.liveId + "/" then init = invalid
+    end if
+    if init = invalid then
+        ' a segment asked for before its init: find the init through the playlist
+        init = trackInit(liveMapOf(upstreamPlaylist()), kind)
+        if init = invalid then return invalid
+    end if
+    raw = rawSegment(name)
+    if raw = invalid then return invalid
+    return mp4TrackPieces(raw, init.track)
+end function
+
+' The audio and the video rendition ask for the same segment; keep the last
+' few downloads so each is fetched once.
+function rawSegment(name as String) as Dynamic
+    if m.segCache = invalid then m.segCache = []
+    key = m.global.liveId + "/" + name
+    for each e in m.segCache
+        if e.key = key then return e.raw
+    end for
+    raw = liveFetchBytes(m.global.liveBase + name, m.global.liveHeaders, 8000, "tmp:/live_srv_seg.m4s")
+    if raw = invalid then return invalid
+    m.segCache.Push({ key: key, raw: raw })
+    if m.segCache.Count() > 4 then m.segCache.Shift()
+    return raw
+end function
+
+sub sendBytes(c as Object, body as Object, start as Integer, length as Integer)
     sent = 0
-    total = body.Count()
+    total = length
     tries = 0
-    while sent < total and tries < 500
-        n = c.Send(body, sent, total - sent)
+    while sent < total and tries < 1500
+        n = c.Send(body, start + sent, total - sent)
         if n > 0 then
             sent = sent + n
+            tries = 0
         else
             tries = tries + 1
             sleep(2)

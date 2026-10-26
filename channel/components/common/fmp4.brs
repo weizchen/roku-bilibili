@@ -62,8 +62,21 @@ function mp4Hex2(v as Integer) as String
     return Mid(digits, (v \ 16) + 1, 1) + Mid(digits, (v and 15) + 1, 1)
 end function
 
-' The init segment with only the sound track: { bytes, track } (track 0 when there is none).
-function mp4AudioInit(init as Object) as Object
+' Handler ("vide", "soun") of the first track in the init segment's moov.
+' Roku treats the first track of a muxed stream as the picture.
+function mp4FirstTrack(init as Object) as String
+    m4 = mp4Find(init, "moov", 0, init.Count())
+    if m4 < 0 then return ""
+    t = mp4Find(init, "trak", m4, init.Count())
+    if t < 0 then return ""
+    h = mp4Find(init, "hdlr", t, init.Count())
+    if h < 0 or h + 16 > init.Count() then return ""
+    return Chr(init[h + 12]) + Chr(init[h + 13]) + Chr(init[h + 14]) + Chr(init[h + 15])
+end function
+
+' The init segment with only one kind of track ("soun" or "vide"):
+' { bytes, track } (track 0 when there is none).
+function mp4TrackInit(init as Object, kind as String) as Object
     out = CreateObject("roByteArray")
     track = 0
     n = init.Count()
@@ -84,7 +97,7 @@ function mp4AudioInit(init as Object) as Object
                 t2 = mp4Type(init, j)
                 if t2 = "trak" then
                     h = mp4Find(init, "hdlr", j, j + s2)
-                    if h >= 0 and mp4Find(init, "soun", h + 12, h + 16) = h + 12 then
+                    if h >= 0 and mp4Find(init, kind, h + 12, h + 16) = h + 12 then
                         mp4Copy(moov, init, j, s2)
                         t = mp4Find(init, "tkhd", j, j + s2)
                         if init[t + 4] = 0 then track = mp4U32(init, t + 16) else track = mp4U32(init, t + 24)
@@ -117,8 +130,11 @@ end function
 
 ' A media segment cut down to one track: each moof keeps only that track's
 ' traf, and its mdat only that track's samples, with the offsets rewritten.
-function mp4TrackSegment(seg as Object, track as Integer) as Object
-    out = CreateObject("roByteArray")
+' Returned as pieces to send in order -- small new headers, and slices of the
+' original segment for the samples, so sample data is never copied byte by byte:
+' { pieces: [{ b: roByteArray, s: start, n: length }], length: total }
+function mp4TrackPieces(seg as Object, track as Integer) as Object
+    out = { pieces: [], length: 0 }
     n = seg.Count()
     i = 0
     while i + 8 <= n
@@ -180,43 +196,54 @@ sub mp4PushFragment(out as Object, seg as Object, moofAt as Integer, moofSize as
         k = k + s3
     end while
 
+    head = CreateObject("roByteArray")
     moofLen = 8 + mfhdSize + trafSize
-    mp4PushU32(out, moofLen)
+    mp4PushU32(head, moofLen)
     for each ch in ["m", "o", "o", "f"]
-        out.Push(Asc(ch))
+        head.Push(Asc(ch))
     end for
-    mp4Copy(out, seg, mfhdAt, mfhdSize)
-    trafOut = out.Count()
-    mp4Copy(out, seg, trafAt, trafSize)
+    mp4Copy(head, seg, mfhdAt, mfhdSize)
+    trafOut = head.Count()
+    mp4Copy(head, seg, trafAt, trafSize)
     cursor = moofLen + 8
     mdatLen = 8
     for each r in runs
-        mp4SetU32(out, trafOut + r.trun + 16, cursor)
+        mp4SetU32(head, trafOut + r.trun + 16, cursor)
         cursor = cursor + r.length
         mdatLen = mdatLen + r.length
     end for
-    mp4PushU32(out, mdatLen)
+    mp4PushU32(head, mdatLen)
     for each ch in ["m", "d", "a", "t"]
-        out.Push(Asc(ch))
+        head.Push(Asc(ch))
     end for
+    out.pieces.Push({ b: head, s: 0, n: head.Count() })
+    out.length = out.length + head.Count()
     for each r in runs
-        mp4Copy(out, seg, r.start, r.length)
+        out.pieces.Push({ b: seg, s: r.start, n: r.length })
+        out.length = out.length + r.length
     end for
 end sub
 
 ' ---------- fetching (works on any thread that may block) ----------
 
+' One transfer object per thread, so the TLS connection to the CDN stays open
+' between the once-a-second playlist and segment requests.
 function liveFetch(url as String, headers as Object, toFile as String, timeoutMs as Integer) as Object
-    port = CreateObject("roMessagePort")
-    x = CreateObject("roUrlTransfer")
-    x.SetMessagePort(port)
+    if m.liveXfer = invalid then
+        m.livePort = CreateObject("roMessagePort")
+        m.liveXfer = CreateObject("roUrlTransfer")
+        m.liveXfer.SetMessagePort(m.livePort)
+        m.liveXfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        m.liveXfer.InitClientCertificates()
+    end if
+    x = m.liveXfer
     x.SetUrl(url)
-    x.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    x.InitClientCertificates()
+    hdrs = {}
     for each h in headers
         colon = Instr(1, h, ":")
-        if colon > 1 then x.AddHeader(Left(h, colon - 1), Mid(h, colon + 2))
+        if colon > 1 then hdrs[Left(h, colon - 1)] = Mid(h, colon + 2)
     end for
+    x.SetHeaders(hdrs)
     out = { code: 0, body: "" }
     if toFile = "" then
         sent = x.AsyncGetToString()
@@ -224,12 +251,14 @@ function liveFetch(url as String, headers as Object, toFile as String, timeoutMs
         sent = x.AsyncGetToFile(toFile)
     end if
     if not sent then return out
-    msg = wait(timeoutMs, port)
+    msg = wait(timeoutMs, m.livePort)
     if type(msg) = "roUrlEvent" then
         out.code = msg.GetResponseCode()
         if toFile = "" then out.body = msg.GetString()
     else
         x.AsyncCancel()
+        ' a cancelled transfer can still post its event later; start clean next time
+        m.liveXfer = invalid
     end if
     return out
 end function

@@ -386,14 +386,20 @@ end function
 
 ' Roku plays Bilibili's muxed fmp4 without sound. Point the player at a master
 ' playlist on the loopback server instead: video straight from the CDN, audio
-' as its own rendition that the server cuts out of the same segments.
+' as its own rendition that the server cuts out of the same segments. Some
+' rooms list the sound track first, which Roku would show as a black picture;
+' those get a video rendition too, whose init holds only the picture track.
 sub splitLiveAudio(out as Object, roomid as String)
     src = out.url
     codecs = "avc1.640028"
+    soundFirst = false
     pl = httpGet(src, false, 6000)
     if pl.code = 200 and liveMapOf(pl.body) <> "" then
         init = liveFetchBytes(liveBaseOf(src) + liveMapOf(pl.body), out.headers, 6000, "tmp:/live_task_init.m4s")
-        if init <> invalid then codecs = rokuCodecs(mp4AvcCodec(init))   ' 原画 says level 5.0, which Roku turns down
+        if init <> invalid then
+            codecs = rokuCodecs(mp4AvcCodec(init))   ' 原画 says level 5.0, which Roku turns down
+            soundFirst = mp4FirstTrack(init) = "soun"
+        end if
     end if
     sid = "live" + roomid + "_" + CreateObject("roDateTime").AsSeconds().ToStr()
     q = Chr(34)
@@ -401,7 +407,11 @@ sub splitLiveAudio(out as Object, roomid as String)
     master = "#EXTM3U" + lf + "#EXT-X-VERSION:7" + lf + "#EXT-X-INDEPENDENT-SEGMENTS" + lf
     master = master + "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=" + q + "aud" + q + ",NAME=" + q + "audio" + q + ",DEFAULT=YES,AUTOSELECT=YES,URI=" + q + sid + "/a.m3u8" + q + lf
     master = master + "#EXT-X-STREAM-INF:BANDWIDTH=6000000,CODECS=" + q + codecs + ",mp4a.40.2" + q + ",AUDIO=" + q + "aud" + q + lf
-    master = master + src + lf
+    if soundFirst then
+        master = master + sid + "/v.m3u8" + lf
+    else
+        master = master + src + lf
+    end if
     out.sid = sid
     out.src = src
     out.base = liveBaseOf(src)
