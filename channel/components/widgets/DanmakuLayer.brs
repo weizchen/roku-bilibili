@@ -7,7 +7,7 @@ sub init()
     m.speed = 230.0      ' px per second of video time
     m.laneH = 56
     m.laneTop = 36
-    m.scrollLanes = 9
+    m.scrollLanes = 9    ' set from `area` below
     m.fixedLanes = 4
     m.fixedSecs = 4.0
     m.font = cjkFont(42)
@@ -18,8 +18,20 @@ sub init()
     m.clock = CreateObject("roTimespan")
     m.tick = m.top.findNode("tick")
     m.tick.observeField("fire", "onTick")
-    buildPool(48)
-    resetLanes()
+    buildPool(64)
+    onArea()
+end sub
+
+' Rows that fit in the chosen share of the screen. Below full screen, bottom
+' comments move up into the top rows so the lower part stays clear.
+sub onArea()
+    usable = 1080 * m.top.area - m.laneTop - 8
+    m.scrollLanes = Int(usable / m.laneH)
+    if m.scrollLanes < 1 then m.scrollLanes = 1
+    m.fixedLanes = 4
+    if m.fixedLanes > m.scrollLanes then m.fixedLanes = m.scrollLanes
+    m.bottomAllowed = m.top.area >= 0.99
+    if m.pool <> invalid then clearAll()
 end sub
 
 sub buildPool(n as Integer)
@@ -204,6 +216,7 @@ end function
 ' d = [time, mode (1 scroll / 4 bottom / 5 top), color, text]
 function spawn(d as Object, t as Float) as Boolean
     mode = d[1]
+    if mode = 4 and not m.bottomAllowed then mode = 5
     if mode = 5 then
         lane = freeTopLane(t)
     else if mode = 4 then

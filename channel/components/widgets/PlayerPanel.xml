@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Side panel opened with the down key during playback: danmaku on/off and opacity. -->
-<component name="DanmakuPanel" extends="Group">
+<!-- Side panel opened with the up key during playback: play mode and danmaku. -->
+<component name="PlayerPanel" extends="Group">
   <interface>
+    <field id="mode" type="string" value="next" />
     <field id="enabled" type="boolean" value="true" />
     <field id="alpha" type="float" value="0.8" />
+    <field id="area" type="float" value="0.5" />
     <field id="count" type="integer" onChange="paint" />
     <field id="closed" type="boolean" alwaysNotify="true" />
   </interface>
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
-  <script type="text/brightscript" uri="DanmakuPanel.brs" />
+  <script type="text/brightscript" uri="PlayerPanel.brs" />
   <children>
     <Rectangle translation="[1360,0]" width="560" height="1080" color="0x0F0F14FF" />
-    <Label id="heading" translation="[1420,92]" text="弹幕设置" color="0xFFFFFFFF" />
+    <Label id="heading" translation="[1420,92]" text="播放设置" color="0xFFFFFFFF" />
     <Label id="countLabel" translation="[1420,158]" width="460" color="0x8E8E9EFF" />
     <Group id="rows" translation="[1400,236]" />
     <Label id="hint" translation="[1420,970]" width="460" color="0x6E6E7EFF" />

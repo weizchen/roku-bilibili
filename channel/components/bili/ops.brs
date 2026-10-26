@@ -43,6 +43,10 @@ sub execute()
         res = opLivePlay(p)
     else if op = "favcovers" then
         res = opFavCovers(p)
+    else if op = "upinfo" then
+        res = opUpInfo(p)
+    else if op = "upvideos" then
+        res = opUpVideos(p)
     else if op = "favlist" then
         res = opFavList(p)
     else if op = "historydelete" then
@@ -203,6 +207,7 @@ function opVideo(p as Object) as Object
         title: fit(strOf(d.title))
         desc: fit(desc)
         up: fit(strOf(owner.name))
+        mid: strOf(owner.mid)
         poster: sized(strOf(d.pic), 640, 400)
         duration: intOf(d.duration)
         date_text: dateText(intOf(d.pubdate))
@@ -479,6 +484,43 @@ function opFavCovers(p as Object) as Object
 end function
 
 ' One page of a folder, newest favourite first; removed videos are skipped.
+' ---------- an uploader's page ----------
+
+function opUpInfo(p as Object) as Object
+    r = biliApi(apiBase() + "/x/web-interface/card", { mid: strOf(p.mid), photo: "false" })
+    if not r.ok then return fail(r.error)
+    c = r.data.card
+    if type(c) <> "roAssociativeArray" then c = {}
+    lv = 0
+    if type(c.level_info) = "roAssociativeArray" then lv = intOf(c.level_info.current_level)
+    title = ""
+    if type(c.Official) = "roAssociativeArray" then title = strOf(c.Official.title)
+    return okWith({
+        name: fit(strOf(c.name))
+        face: sized(strOf(c.face), 160, 160)
+        sign: fit(strOf(c.sign))
+        official: fit(title)
+        level: lv
+        fans: fmtCount(firstOf([r.data.follower, c.fans]))
+        videos: intOf(r.data.archive_count)
+    })
+end function
+
+' Newest first, or most played. The space search API wants a browser
+' fingerprint, so this uses the series one, which lists every upload too.
+function opUpVideos(p as Object) as Object
+    page = intOf(p.page)
+    if page < 1 then page = 1
+    params = { mid: strOf(p.mid), keywords: "", ps: 30, pn: page }
+    if strOf(p.order) = "views" then params.orderby = "views"
+    r = biliApi(apiBase() + "/x/series/recArchivesByKeywords", params)
+    if not r.ok then return fail(r.error)
+    items = cardsOf(r.data.archives)
+    total = 0
+    if type(r.data.page) = "roAssociativeArray" then total = intOf(r.data.page.total)
+    return okWith({ items: items, total: total, last: page * 30 >= total or items.Count() = 0 })
+end function
+
 function opFavList(p as Object) as Object
     page = intOf(p.page)
     if page < 1 then page = 1

@@ -169,6 +169,37 @@ end function
 
 ' ---------- small persistent settings ----------
 
+' What the player does when a video ends (setting "play_mode").
+function playModes() as Object
+    return [
+        { key: "stop", name: "播完停止" }
+        { key: "next", name: "自动连播" }
+        { key: "loop", name: "单集循环" }
+    ]
+end function
+
+function playMode() as String
+    return loadSetting("play_mode", "next")
+end function
+
+' How much of the screen, from the top, danmaku may cover (setting "dm_area").
+function danmakuAreas() as Object
+    return [0.25, 0.5, 0.75, 1.0]
+end function
+
+function danmakuAreaNames() as Object
+    return ["25%", "50%", "75%", "100%"]
+end function
+
+' Index of the list value nearest x (settings are stored as text).
+function nearestIndex(list as Object, x as Float) as Integer
+    best = 0
+    for i = 1 to list.Count() - 1
+        if Abs(list[i] - x) < Abs(list[best] - x) then best = i
+    end for
+    return best
+end function
+
 function loadSetting(key as String, fallback as String) as String
     sec = CreateObject("roRegistrySection", "bili")
     if sec.Exists(key) then return sec.Read(key)

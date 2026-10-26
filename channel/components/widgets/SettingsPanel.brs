@@ -10,11 +10,20 @@ sub init()
     for each f in m.fontList
         fontNames.Push(f.name)
     end for
+    m.modes = playModes()
+    modeNames = []
+    for each md in m.modes
+        modeNames.Push(md.name)
+    end for
+    m.areas = danmakuAreas()
+    ' key: what valueIndex() and change() switch on
     m.rowsDef = [
-        { name: "主题色", labels: names }
-        { name: "字体", labels: fontNames }
-        { name: "弹幕默认", labels: ["关", "开"] }
-        { name: "弹幕不透明度", labels: ["20%", "40%", "60%", "80%", "100%"] }
+        { key: "theme", name: "主题色", labels: names }
+        { key: "font", name: "字体", labels: fontNames }
+        { key: "mode", name: "播放模式", labels: modeNames }
+        { key: "dm_on", name: "弹幕默认", labels: ["关", "开"] }
+        { key: "dm_alpha", name: "弹幕不透明度", labels: ["20%", "40%", "60%", "80%", "100%"] }
+        { key: "dm_area", name: "弹幕显示区域", labels: danmakuAreaNames() }
     ]
 
     m.rows = []
@@ -60,26 +69,29 @@ sub applyFonts()
 end sub
 
 function valueIndex(row as Integer) as Integer
-    if row = 0 then
+    key = m.rowsDef[row].key
+    if key = "theme" then
         for i = 0 to m.themeList.Count() - 1
             if m.themeList[i].key = currentTheme().key then return i
         end for
         return 0
-    else if row = 1 then
+    else if key = "font" then
         for i = 0 to m.fontList.Count() - 1
             if m.fontList[i].key = currentFont().key then return i
         end for
         return 0
-    else if row = 2 then
+    else if key = "mode" then
+        for i = 0 to m.modes.Count() - 1
+            if m.modes[i].key = playMode() then return i
+        end for
+        return 0
+    else if key = "dm_on" then
         if loadSetting("dm_on", "1") = "1" then return 1
         return 0
+    else if key = "dm_alpha" then
+        return nearestIndex(m.alphas, Val(loadSetting("dm_alpha", "0.8")))
     end if
-    alpha = Val(loadSetting("dm_alpha", "0.8"))
-    best = 3
-    for i = 0 to m.alphas.Count() - 1
-        if Abs(m.alphas[i] - alpha) < 0.05 then best = i
-    end for
-    return best
+    return nearestIndex(m.areas, Val(loadSetting("dm_area", "0.5")))
 end function
 
 sub change(delta as Integer, wrap as Boolean)
@@ -90,23 +102,28 @@ sub change(delta as Integer, wrap as Boolean)
     else if i < 0 or i >= count then
         return
     end if
-    if m.sel = 0 then
+    key = m.rowsDef[m.sel].key
+    if key = "theme" then
         ' the home screen and its cards repaint themselves off this global
         m.global.theme = m.themeList[i]
         saveSetting("theme", m.themeList[i].key)
-    else if m.sel = 1 then
+    else if key = "font" then
         ' the rest of the app picks the new font up as screens are rebuilt
         m.global.font = m.fontList[i]
         saveSetting("font", m.fontList[i].key)
         applyFonts()
-    else if m.sel = 2 then
+    else if key = "mode" then
+        saveSetting("play_mode", m.modes[i].key)
+    else if key = "dm_on" then
         if i = 1 then
             saveSetting("dm_on", "1")
         else
             saveSetting("dm_on", "0")
         end if
-    else
+    else if key = "dm_alpha" then
         saveSetting("dm_alpha", Str(m.alphas[i]).Trim())
+    else
+        saveSetting("dm_area", Str(m.areas[i]).Trim())
     end if
     paint()
 end sub

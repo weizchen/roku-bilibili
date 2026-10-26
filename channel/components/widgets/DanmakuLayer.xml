@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Danmaku over the video. Bind `video`, set `cid`; toggle with `enabled`, fade with `opacity`. -->
+<!-- Danmaku over the video. Bind `video`, set `cid`; toggle with `enabled`, fade with `opacity`,
+     and `area` is the share of the screen height (from the top) it may use. -->
 <component name="DanmakuLayer" extends="Group">
   <interface>
     <field id="video" type="node" onChange="onVideo" />
     <field id="cid" type="string" onChange="onCid" />
     <field id="enabled" type="boolean" value="true" onChange="onEnabled" />
+    <field id="area" type="float" value="0.5" onChange="onArea" />
     <field id="count" type="integer" />
   </interface>
   <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />

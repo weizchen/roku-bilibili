@@ -131,14 +131,23 @@ sub onAccountProgress(event as Object)
 end sub
 
 sub paintResume()
+    labels = []
+    m.actions = []
     if m.saved = invalid then
-        m.buttons.buttons = ["▶  播放"]
-        return
+        labels.Push("▶  播放")
+        m.actions.Push("start")
+    else
+        resume = "▶  继续 " + fmtTime(intOf(m.saved.p))
+        if m.pages.Count() > 1 then resume = "▶  继续 P" + (intOf(m.saved.i) + 1).ToStr() + " " + fmtTime(intOf(m.saved.p))
+        labels.Append([resume, "从头播放"])
+        m.actions.Append(["resume", "start"])
+        if m.pages.Count() > 1 then m.parts.jumpToItem = intOf(m.saved.i)
     end if
-    resume = "▶  继续 " + fmtTime(intOf(m.saved.p))
-    if m.pages.Count() > 1 then resume = "▶  继续 P" + (intOf(m.saved.i) + 1).ToStr() + " " + fmtTime(intOf(m.saved.p))
-    m.buttons.buttons = [resume, "从头播放"]
-    if m.pages.Count() > 1 then m.parts.jumpToItem = intOf(m.saved.i)
+    if strOf(m.video.mid) <> "" and strOf(m.video.mid) <> "0" then
+        labels.Push("UP主主页")
+        m.actions.Push("up")
+    end if
+    m.buttons.buttons = labels
 end sub
 
 ' stack meta and description under however many lines the title took
@@ -166,7 +175,10 @@ end sub
 
 sub onButton()
     if m.video = invalid then return
-    if m.saved <> invalid and m.buttons.buttonSelected = 0 then
+    action = strOf(m.actions[m.buttons.buttonSelected])
+    if action = "up" then
+        navigate({ action: "up", mid: strOf(m.video.mid), name: strOf(m.video.up) })
+    else if action = "resume" and m.saved <> invalid then
         play(intOf(m.saved.i), intOf(m.saved.p))
     else
         play(0, 0)
@@ -194,6 +206,7 @@ sub play(index as Integer, startAt as Integer)
         aid: strOf(m.video.aid)
         title: strOf(m.video.title)
         up: strOf(m.video.up)
+        poster: strOf(m.video.poster)
         pages: m.pages
         index: index
         startAt: startAt

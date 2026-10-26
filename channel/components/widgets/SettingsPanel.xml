@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Settings rows shown right under the home tab bar: theme, font, danmaku defaults.
+<!-- Settings rows shown right under the home tab bar: theme, font, play mode, danmaku defaults.
      Left/right changes a row and applies at once. `active` = it holds focus. -->
 <component name="SettingsPanel" extends="Group">
   <interface>

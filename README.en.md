@@ -7,10 +7,12 @@ Watch Bilibili directly on a Roku TV. **The app runs entirely on the TV by itsel
 - Home: recommended, popular and ranking, with every video's publish date
 - Live streams: when you are logged in, the streamers you follow come first while they are live; switch quality from the remote
 - Search with pinyin-initial suggestions (type `ys` and 原神 comes up)
+- Uploader pages: open one from a video page to see everything that uploader has posted, newest or most played first
 - QR-code login, up to 1080P when logged in
 - Me: your account info and favourites
 - Watch history, which you can delete from the TV
-- Danmaku (bullet comments) with on/off and opacity
+- Danmaku (bullet comments) with on/off, opacity and how much of the screen they may cover (25% / 50% / 75% / 100%)
+- Play modes: stop at the end, autoplay (moves on to the next related video you haven't watched) or repeat; during playback you can open a video list to jump to another part or another video
 - Watch progress syncs with your Bilibili account both ways: stop on the TV and continue on your phone, or the other way round
 - Multi-part videos, related videos, resume playback
 - Theme colour (yellow / pink / blue / green / purple) and font (Kai / Hei / Song) in Settings
@@ -22,8 +24,10 @@ The interface is in Chinese, as is Bilibili.
 | Home | Video page |
 | --- | --- |
 | ![Home: popular](docs/screenshots/home.jpg) | ![Video page](docs/screenshots/video.jpg) |
-| **Search (pinyin suggestions)** | **Settings (theme, font, danmaku)** |
-| ![Search](docs/screenshots/search.jpg) | ![Settings](docs/screenshots/settings.jpg) |
+| **Uploader page** | **Search (pinyin suggestions)** |
+| ![Uploader page](docs/screenshots/up.jpg) | ![Search](docs/screenshots/search.jpg) |
+| **Danmaku and the video list during playback** | **Settings (theme, font, play mode, danmaku)** |
+| ![Video list during playback](docs/screenshots/player.jpg) | ![Settings](docs/screenshots/settings.jpg) |
 
 > **Unofficial project**, not affiliated with Bilibili (Shanghai Kuanyu Digital Technology Co., Ltd.) in any way; for personal and educational use only. It uses your own Bilibili account — please follow Bilibili's terms of service and don't use it commercially.
 
@@ -60,7 +64,7 @@ You need a Roku TV or Roku player and a computer (macOS or Linux) on the same Wi
 | 历史 History | Your watch history with how far you got |
 | 搜索 Search | Press OK to open search |
 | 我的 Me | Logged out: the login QR code. Logged in: your account info on top and your favourite folders below — open a folder to see its videos |
-| 设置 Settings | Theme colour, font, danmaku default and opacity — press Down to go in and change them in place |
+| 设置 Settings | Theme colour, font, play mode, danmaku default, opacity and screen area — press Down to go in and change them in place |
 
 ### Remote
 
@@ -71,8 +75,9 @@ You need a Roku TV or Roku player and a computer (macOS or Linux) on the same Wi
 | History | `*` on a video: delete that entry, or clear all history |
 | Me | `*`: refresh, or log out |
 | Settings | Up/Down pick a row, Left/Right change it, applied immediately |
-| Video page | Down for related videos, Right for parts |
-| Player | **OK pauses / resumes**, Left/Right seek, **Down opens danmaku settings**, Up shows the title, Back exits (your position is saved) |
+| Video page | Down for related videos, Right for parts, 「UP主主页」 opens the uploader's page |
+| Uploader page | Up to switch between newest and most played; scrolling down loads more |
+| Player | **OK pauses / resumes**, Left/Right seek, **Down opens the video list** (parts, related videos), **Up opens playback settings** (play mode, danmaku on/off, opacity, screen area), Back exits (your position is saved) |
 | Live stream | Down switches quality, Up or OK shows the title, Back exits |
 | Search | Type on the on-screen keyboard; pinyin initials work |
 

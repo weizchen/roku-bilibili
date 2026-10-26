@@ -99,6 +99,10 @@ sub onRoute()
         s = CreateObject("roSGNode", "LiveScreen")
         push(s)
         s.room = { roomid: a.roomid, title: a.title, up: a.up }
+    else if action = "up" then
+        s = CreateObject("roSGNode", "UpScreen")
+        push(s)
+        s.uploader = { mid: a.mid, name: a.name }
     else if action = "favorites" then
         s = CreateObject("roSGNode", "FavoriteScreen")
         push(s)

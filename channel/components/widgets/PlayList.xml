@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Drawer opened with the down key during playback: the video's parts and
+     related videos. content = rows of card nodes; `chosen` = [row, item]. -->
+<component name="PlayList" extends="Group">
+  <interface>
+    <field id="content" type="node" onChange="onContent" />
+    <field id="focusItem" type="intarray" />
+    <field id="chosen" type="intarray" alwaysNotify="true" />
+    <field id="closed" type="boolean" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/common/utils.brs" />
+  <script type="text/brightscript" uri="PlayList.brs" />
+  <children>
+    <Group id="drawer">
+      <Poster uri="pkg:/images/scrim_bottom.png" width="1920" height="300" translation="[0,-300]" />
+      <Rectangle width="1920" height="1080" color="0x0F0F14F2" />
+      <Label id="hint" translation="[1224,24]" width="600" horizAlign="right" color="0x6E6E7EFF" />
+      <RowList id="rows" translation="[90,20]" itemComponentName="VideoCard"
+               numRows="2" itemSize="[1740,360]" rowItemSize="[[330,300]]" rowItemSpacing="[[26,0]]"
+               showRowLabel="[true]" rowLabelOffset="[[4,16]]" rowLabelColor="0xFFFFFFFF"
+               drawFocusFeedback="false" rowFocusAnimationStyle="floatingFocus" />
+    </Group>
+  </children>
+</component>

@@ -1,15 +1,23 @@
 sub init()
     m.alphas = [0.2, 0.4, 0.6, 0.8, 1.0]
+    m.areas = danmakuAreas()
+    m.modes = playModes()
+    modeNames = []
+    for each md in m.modes
+        modeNames.Push(md.name)
+    end for
     m.rowsDef = [
+        { name: "播放模式", labels: modeNames }
         { name: "弹幕", labels: ["关", "开"] }
         { name: "不透明度", labels: ["20%", "40%", "60%", "80%", "100%"] }
+        { name: "显示区域", labels: danmakuAreaNames() }
     ]
     m.top.findNode("heading").font = cjkFont(44)
     m.countLabel = m.top.findNode("countLabel")
     m.countLabel.font = cjkFont(26)
     hint = m.top.findNode("hint")
     hint.font = cjkFont(24)
-    hint.text = "左右键调整　返回键关闭"
+    hint.text = "上下选择　左右调整　返回键关闭"
 
     m.rows = []
     group = m.top.findNode("rows")
@@ -42,14 +50,17 @@ end sub
 
 function valueIndex(row as Integer) as Integer
     if row = 0 then
+        for i = 0 to m.modes.Count() - 1
+            if m.modes[i].key = m.top.mode then return i
+        end for
+        return 0
+    else if row = 1 then
         if m.top.enabled then return 1
         return 0
+    else if row = 2 then
+        return nearestIndex(m.alphas, m.top.alpha)
     end if
-    best = 3
-    for i = 0 to m.alphas.Count() - 1
-        if Abs(m.alphas[i] - m.top.alpha) < 0.05 then best = i
-    end for
-    return best
+    return nearestIndex(m.areas, m.top.area)
 end function
 
 sub change(delta as Integer, wrap as Boolean)
@@ -61,9 +72,13 @@ sub change(delta as Integer, wrap as Boolean)
         return
     end if
     if m.sel = 0 then
+        m.top.mode = m.modes[i].key
+    else if m.sel = 1 then
         m.top.enabled = (i = 1)
-    else
+    else if m.sel = 2 then
         m.top.alpha = m.alphas[i]
+    else
+        m.top.area = m.areas[i]
     end if
     paint()
 end sub
@@ -80,7 +95,7 @@ sub paint()
         focused = (i = m.sel)
         r.chip.visible = focused
         r.value.text = "‹  " + m.rowsDef[i].labels[valueIndex(i)] + "  ›"
-        dimmed = (i = 1 and not m.top.enabled)
+        dimmed = (i >= 2 and not m.top.enabled)
         if focused then
             r.name.color = onAccent()
             r.value.color = onAccent()
@@ -97,10 +112,10 @@ end sub
 ' Swallow everything while open so the player underneath does not seek.
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return true
-    if key = "up" then
-        m.sel = 0
-    else if key = "down" then
-        m.sel = 1
+    if key = "up" and m.sel > 0 then
+        m.sel = m.sel - 1
+    else if key = "down" and m.sel < m.rows.Count() - 1 then
+        m.sel = m.sel + 1
     else if key = "left" then
         change(-1, false)
     else if key = "right" then
